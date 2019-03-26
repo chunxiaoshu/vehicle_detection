@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vehicle_detection</name>
+  <version>0.0.0</version>
+  <description>The vehicle_detection package</description>
+
+  <maintainer email="zlk@todo.todo">zlk</maintainer>
+  <license>TODO</license>
+
+  <!-- <url type="website">http://wiki.ros.org/gazebo_vehicle</url> -->
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>gazebo_ros</build_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+
+  <export>
+    <gazebo_ros gazebo_model_path="${prefix}/models"/>
+    <gazebo_ros gazebo_media_path="${prefix}/models"/>
+  </export>
+</package>

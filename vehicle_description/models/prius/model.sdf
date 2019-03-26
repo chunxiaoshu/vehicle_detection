@@ -1,0 +1,347 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='prius'>
+    <static>false</static>
+
+
+    <link name='base_link'>
+      <pose>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>1.44893 0 0.479646 0 -0 0</pose>
+        <mass>1357</mass>
+        <inertia>
+          <ixx>2581.36</ixx>
+          <ixy>-1.57724</ixy>
+          <ixz>-0.695487</ixz>
+          <iyy>593.642</iyy>
+          <iyz>0</iyz>
+          <izz>2684.05</izz>
+        </inertia>
+      </inertial>
+
+      <visual name='base_link_fixed_joint_lump__chassis_visual'>
+        <pose>1.45 0 0 0 -0 1.57</pose>
+        <geometry>
+          <mesh>
+            <scale>0.01 0.01 0.01</scale>
+            <uri>model://prius/meshes/hybrid_body.obj</uri>
+          </mesh>
+        </geometry>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+
+      <collision name='base_link_fixed_joint_lump__top_front_collision_4'>
+        <laser_retro>0</laser_retro>
+        <pose>1.28876 0.000128 1.38604 0.13503 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.27915 0.625988 0.171868</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__trunk_collision_7'>
+        <laser_retro>0</laser_retro>
+        <pose>-0.187058 0.001304 0.88818 0 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.78806 1.13899 0.482746</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__chassis_collision'>
+        <laser_retro>0</laser_retro>
+        <pose>1.4 4e-05 0.625 0 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.7526 2.1 0.95</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__back_bumper_collision_8'>
+        <laser_retro>0</laser_retro>
+        <pose>-0.604453 0.001636 0.57787 0 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.78165 0.512093 0.581427</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__windshield_collision_3'>
+        <laser_retro>0</laser_retro>
+        <pose>2.3251 -0.000697 1.03227 0.335476 0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.16838 1.65425 0.272347</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__top_rear_collision_5'>
+        <laser_retro>0</laser_retro>
+        
+        <pose>0.632304 0.000651 1.36007 -0.068997 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.28513 0.771189 0.226557</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__front_bumper_collision_1'>
+        <laser_retro>0</laser_retro>
+        <pose>3.45 -0.001593 0.458488 0 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.33728 0.48 0.566691</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__rear_window_collision_6'>
+        <laser_retro>0</laser_retro>
+        <pose>-0.19053 0.001306 1.17513 -0.262017 -0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.26785 1.11634 0.244286</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name='base_link_fixed_joint_lump__hood_collision_2'>
+        <laser_retro>0</laser_retro>
+        <pose>3.35084 -0.001514 0.676305 0.341247 0 1.57</pose>
+        <geometry>
+          <box>
+            <size>1.59797 0.493107 0.265468</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+
+    <link name='fl_axle'>
+      <pose>2.86061 0.765877 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.004</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.004</iyy>
+          <iyz>0</iyz>
+          <izz>0.004</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+    </link>
+
+    <link name='fr_axle'>
+      <pose>2.85939 -0.768123 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.004</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.004</iyy>
+          <iyz>0</iyz>
+          <izz>0.004</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+    </link>
+
+    <link name='front_left_wheel'>
+      <pose>2.86061 0.765877 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>11</mass>
+        <inertia>
+          <ixx>0.586312</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.335529</iyy>
+          <iyz>0</iyz>
+          <izz>0.335529</izz>
+        </inertia>
+      </inertial>
+      <visual name='front_left_wheel_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.01 0.01 0.01</scale>
+            <uri>model://prius/meshes/wheel.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name='front_left_wheel_collision_collision'>
+        <laser_retro>0</laser_retro>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.31265</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='front_right_wheel'>
+      <pose>2.85939 -0.768123 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>11</mass>
+        <inertia>
+          <ixx>0.586312</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.335529</iyy>
+          <iyz>0</iyz>
+          <izz>0.335529</izz>
+        </inertia>
+      </inertial>
+      <visual name='front_right_wheel_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.01 0.01 0.01</scale>
+            <uri>model://prius/meshes/wheel.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name='front_right_wheel_collision_collision'>
+        <laser_retro>0</laser_retro>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.31265</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='rear_left_wheel'>
+      <pose>0.000632 0.794154 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>11</mass>
+        <inertia>
+          <ixx>0.586312</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.335529</iyy>
+          <iyz>0</iyz>
+          <izz>0.335529</izz>
+        </inertia>
+      </inertial>
+      <visual name='rear_left_wheel_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.01 0.01 0.01</scale>
+            <uri>model://prius/meshes/wheel.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name='rear_left_wheel_collision_collision'>
+        <laser_retro>0</laser_retro>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.31265</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name='rear_right_wheel'>
+      <pose>-0.000631 -0.791845 0.3 0 -0 1.57</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>11</mass>
+        <inertia>
+          <ixx>0.586312</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.335529</iyy>
+          <iyz>0</iyz>
+          <izz>0.335529</izz>
+        </inertia>
+      </inertial>
+      <visual name='rear_right_wheel_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>0.01 0.01 0.01</scale>
+            <uri>model://prius/meshes/wheel.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name='rear_right_wheel_collision_collision'>
+        <laser_retro>0</laser_retro>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.31265</radius>
+          </sphere>
+        </geometry>
+      </collision>
+    </link>
+
+
+
+
+    <joint name='front_left_wheel_joint' type='fixed'>
+      <parent>fl_axle</parent>
+      <child>front_left_wheel</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>0.000796 1 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+
+    <joint name='front_right_wheel_joint' type='fixed'>
+      <parent>fr_axle</parent>
+      <child>front_right_wheel</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>0.000796 1 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+     
+    </joint>
+    <joint name='rear_left_wheel_joint' type='fixed'>
+      <parent>base_link</parent>
+      <child>rear_left_wheel</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>0.000796 1 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+
+    <joint name='rear_right_wheel_joint' type='fixed'>
+      <parent>base_link</parent>
+      <child>rear_right_wheel</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <axis>
+        <xyz>0.000796 1 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    
+
+
+  </model>
+</sdf>
