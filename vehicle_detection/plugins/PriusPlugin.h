@@ -75,12 +75,6 @@ namespace gazebo
     /// \brief Update on every time step
     private: void Update();
 
-    /// \brief Update steering wheel to front left/right wheel ratio
-    private: void UpdateHandWheelRatio();
-
-    /// \brief Get the radius of a collision
-    private: double CollisionRadius(physics::CollisionPtr _collision);
-
     /// \brief Private data
     private: std::unique_ptr<PriusPluginPrivate> dataPtr;
   };
