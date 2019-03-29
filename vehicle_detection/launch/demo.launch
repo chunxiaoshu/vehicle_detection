@@ -26,7 +26,7 @@
 
   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
   <node name="prius" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-      args="-file $(arg car) -urdf -model prius -x -1 -y 0 -z 0"/> 
+      args="-file $(arg car) -urdf -model prius -x -10 -y 0 -z 0"/> 
   
   <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /> -->
 

@@ -268,46 +268,46 @@ void PriusPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     return;
   }
 
-  this->dataPtr->SpeedCmd = 10;
+  this->dataPtr->SpeedCmd = 1;
 
-  // // Compute wheelbase, frontTrackWidth, and rearTrackWidth
-  // //  first compute the positions of the 4 wheel centers
-  // //  again assumes wheel link is child of joint and has only one collision
-  // unsigned int id = 0;
-  // ignition::math::Vector3d flCenterPos =
-  //   this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
-  // ignition::math::Vector3d frCenterPos =
-  //   this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
-  // ignition::math::Vector3d blCenterPos =
-  //   this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
-  // ignition::math::Vector3d brCenterPos =
-  //   this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
+  // Compute wheelbase, frontTrackWidth, and rearTrackWidth
+  //  first compute the positions of the 4 wheel centers
+  //  again assumes wheel link is child of joint and has only one collision
+  unsigned int id = 0;
+  ignition::math::Vector3d flCenterPos =
+    this->dataPtr->flWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
+  ignition::math::Vector3d frCenterPos =
+    this->dataPtr->frWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
+  ignition::math::Vector3d blCenterPos =
+    this->dataPtr->blWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
+  ignition::math::Vector3d brCenterPos =
+    this->dataPtr->brWheelJoint->GetChild()->GetCollision(id)->WorldPose().Pos();
 
-  // // track widths are computed first
-  // ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
-  // this->dataPtr->frontTrackWidth = vec3.Length();
-  // vec3 = flCenterPos - frCenterPos;
+  // track widths are computed first
+  ignition::math::Vector3d vec3 = flCenterPos - frCenterPos;
+  this->dataPtr->frontTrackWidth = vec3.Length();
+  vec3 = flCenterPos - frCenterPos;
 
-  // // to compute wheelbase, first position of axle centers are computed
-  // ignition::math::Vector3d frontAxlePos = (flCenterPos + frCenterPos) / 2;
-  // ignition::math::Vector3d backAxlePos = (blCenterPos + brCenterPos) / 2;
-  // // then the wheelbase is the distance between the axle centers
-  // vec3 = frontAxlePos - backAxlePos;
-  // this->dataPtr->wheelbaseLength = vec3.Length();
+  // to compute wheelbase, first position of axle centers are computed
+  ignition::math::Vector3d frontAxlePos = (flCenterPos + frCenterPos) / 2;
+  ignition::math::Vector3d backAxlePos = (blCenterPos + brCenterPos) / 2;
+  // then the wheelbase is the distance between the axle centers
+  vec3 = frontAxlePos - backAxlePos;
+  this->dataPtr->wheelbaseLength = vec3.Length();
 
-  // this->dataPtr->flWheelSteeringPID.SetPGain(1e4);
-  // this->dataPtr->flWheelSteeringPID.SetIGain(0);
-  // this->dataPtr->flWheelSteeringPID.SetDGain(3e2);
+  this->dataPtr->flWheelSteeringPID.SetPGain(1e4);
+  this->dataPtr->flWheelSteeringPID.SetIGain(0);
+  this->dataPtr->flWheelSteeringPID.SetDGain(3e2);
 
-  // this->dataPtr->frWheelSteeringPID.SetPGain(1e4);
-  // this->dataPtr->frWheelSteeringPID.SetIGain(0);
-  // this->dataPtr->frWheelSteeringPID.SetDGain(3e2);
+  this->dataPtr->frWheelSteeringPID.SetPGain(1e4);
+  this->dataPtr->frWheelSteeringPID.SetIGain(0);
+  this->dataPtr->frWheelSteeringPID.SetDGain(3e2);
 
-  // this->dataPtr->flWheelSteeringPID.SetCmdMax(5000);
-  // this->dataPtr->flWheelSteeringPID.SetCmdMin(-5000);
+  this->dataPtr->flWheelSteeringPID.SetCmdMax(5000);
+  this->dataPtr->flWheelSteeringPID.SetCmdMin(-5000);
 
-  // this->dataPtr->frWheelSteeringPID.SetCmdMax(5000);
-  // this->dataPtr->frWheelSteeringPID.SetCmdMin(-5000);
+  this->dataPtr->frWheelSteeringPID.SetCmdMax(5000);
+  this->dataPtr->frWheelSteeringPID.SetCmdMin(-5000);
 
 
   // start to update
@@ -503,27 +503,27 @@ void PriusPlugin::Update()
   // input: this->dataPtr->handWheelCmd, output: the force
 
 
-  // dPtr->flSteeringAngle = dPtr->flWheelSteeringJoint->Position();
-  // dPtr->frSteeringAngle = dPtr->frWheelSteeringJoint->Position();
-  // // PID (position) steering
-  // this->dataPtr->handWheelCmd = ignition::math::clamp(this->dataPtr->handWheelCmd,
-  //       -MAXSTEER / STEERING_RATIO, MAXSTEER / STEERING_RATIO);
+  dPtr->flSteeringAngle = dPtr->flWheelSteeringJoint->Position();
+  dPtr->frSteeringAngle = dPtr->frWheelSteeringJoint->Position();
+  // PID (position) steering
+  this->dataPtr->handWheelCmd = ignition::math::clamp(this->dataPtr->handWheelCmd,
+        -MAXSTEER / STEERING_RATIO, MAXSTEER / STEERING_RATIO);
 
-  // // PID (position) steering joints based on steering position
-  // // Ackermann steering geometry here
-  // double tanSteer = tan(this->dataPtr->handWheelCmd * STEERING_RATIO);
-  // this->dataPtr->flWheelSteeringCmd = atan2(tanSteer,
-  //     1 - this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength * tanSteer);
-  // this->dataPtr->frWheelSteeringCmd = atan2(tanSteer,
-  //     1 + this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength * tanSteer);
+  // PID (position) steering joints based on steering position
+  // Ackermann steering geometry here
+  double tanSteer = tan(this->dataPtr->handWheelCmd * STEERING_RATIO);
+  this->dataPtr->flWheelSteeringCmd = atan2(tanSteer,
+      1 - this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength * tanSteer);
+  this->dataPtr->frWheelSteeringCmd = atan2(tanSteer,
+      1 + this->dataPtr->frontTrackWidth/2/this->dataPtr->wheelbaseLength * tanSteer);
 
-  // double flwsError = this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
-  // double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
-  // this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
+  double flwsError = this->dataPtr->flSteeringAngle - this->dataPtr->flWheelSteeringCmd;
+  double flwsCmd = this->dataPtr->flWheelSteeringPID.Update(flwsError, dt);
+  this->dataPtr->flWheelSteeringJoint->SetForce(0, flwsCmd);
 
-  // double frwsError = this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
-  // double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
-  // this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
+  double frwsError = this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
+  double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
+  this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
 
 
 
