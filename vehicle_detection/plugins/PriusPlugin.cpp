@@ -484,9 +484,9 @@ void PriusPlugin::Update()
   double linearVel = dPtr->chassisLinearVelocity.Length();    // the speed of car (m/s)
   this->dataPtr->odom += (fabs(linearVel) * dt);          // the distance of car (m)
 
-  std::cout << "speed is " << linearVel << std::endl;
-  std::cout << "wheel speed is " << dPtr->flWheelAngularVelocity << dPtr->frWheelAngularVelocity << 
-                                    dPtr->blWheelAngularVelocity << dPtr->brWheelAngularVelocity << std::endl;
+  // std::cout << "speed is " << linearVel << std::endl;
+  // std::cout << "wheel speed is " << dPtr->flWheelAngularVelocity << dPtr->frWheelAngularVelocity << 
+  //                                   dPtr->blWheelAngularVelocity << dPtr->brWheelAngularVelocity << std::endl;
 
   // dPtr->flWheelJoint->SetVelocity(0, 14.0);
   // dPtr->frWheelJoint->SetVelocity(0, 14.0);

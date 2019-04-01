@@ -33,12 +33,12 @@ catkin_package(
 
 
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(get_lds_data src/get_lds_data.cpp)
-target_link_libraries(get_lds_data ${catkin_LIBRARIES})
+add_executable(lds_data src/lds_data.cpp)
+target_link_libraries(lds_data ${catkin_LIBRARIES})
 
 
 

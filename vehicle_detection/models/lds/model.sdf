@@ -26,17 +26,19 @@
       <ray>
           <scan>
             <horizontal>
-              <samples>760</samples>
+              <samples>761</samples>
               <resolution>1</resolution>
-              <min_angle>-1.657</min_angle>
-              <max_angle>1.657</max_angle>
+              <min_angle>-1.658062761</min_angle>
+              <max_angle>1.658062761</max_angle>
             </horizontal>
           </scan>
+          <!-- sick511 angle range +-190, resolution 0.25 -->
           <range>
             <min>0.2</min>
-            <max>40</max>
-            <resolution>0.006</resolution>
+            <max>26</max>
+            <resolution>0.008</resolution>
           </range>
+          <!-- sick511 range 26(m), resolution 8(mm) -->
           <noise>
             <type>gaussian</type>
             <mean>0</mean>
