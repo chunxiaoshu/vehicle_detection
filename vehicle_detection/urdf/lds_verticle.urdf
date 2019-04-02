@@ -72,7 +72,7 @@
         <alwaysOn>true</alwaysOn>
         <updateRate>50.0</updateRate>
         <topicName>/laser_scan/lds_verticle</topicName>
-        <frameName>lds_verticle_laser</frameName>
+        <frameName>lds_scan</frameName>
       </plugin>
     </sensor>
   </gazebo>

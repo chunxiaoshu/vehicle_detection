@@ -4,7 +4,7 @@ int t = 0;
 
 void dataCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-  LdsSense sick(msg);
+  LdsSensor sick(msg);
   // std::cout << "angle min is " << msg->angle_min << std::endl;
   // std::cout << "angle max is " << msg->angle_max << std::endl;
   // std::cout << "angle increment is " << msg->angle_increment << std::endl;
@@ -15,10 +15,14 @@ void dataCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
   if (t == 3)
   {
-    for (int i = LDS_MIN-1; i < LDS_MAX; ++i)
+    
+    for (int i = ANGLE_CENTER; i < LDS_SAMPLES; ++i)
     {
-      std::cout << "range at " << i << " is " << sick.point_heigh[i] << std::endl;
+      std::cout << "range at " << i << " is " << sick.z_offset[i] << std::endl;
     }
+    std::cout << "angle min is " << msg->angle_min << std::endl;
+    std::cout << "angle max is " << msg->angle_max << std::endl;
+    std::cout << "angle increment is " << msg->angle_increment << std::endl;
   }
   ++t;
 
@@ -30,7 +34,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle node;
 
-  ros::Subscriber sub = node.subscribe("/lds/laser/scan", 1000, dataCallback);
+  ros::Subscriber sub = node.subscribe("/laser_scan/lds_verticle", 1000, dataCallback);
 
   ros::spin();
 
@@ -39,7 +43,7 @@ int main(int argc, char **argv)
 
 
 
-LdsSense::LdsSense(const sensor_msgs::LaserScan::ConstPtr& msg)
+LdsSensor::LdsSensor(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
   this->min_angle = msg->angle_min;
   this->max_angle = msg->angle_max;
@@ -49,24 +53,27 @@ LdsSense::LdsSense(const sensor_msgs::LaserScan::ConstPtr& msg)
   this->max_range = msg->range_max;
   this->range_resolution = LDS_RANGE_RESOLUTION;
 
-  for (int i = ANGLE_CENTER + 1, j = 1; i <= LDS_MAX; ++i, ++j)
+  float angel = 0;
+  for (int i = ANGLE_CENTER; i < LDS_SAMPLES; ++i)
   {
-    this->point_heigh[i] = LDS_HEIGHT - msg->ranges[i] * cos(j * this->angle_resolution);
-  }
-  for (int i = ANGLE_CENTER, j = 0; i >= LDS_MIN; --i, ++j)
-  {
-    this->point_heigh[i] = LDS_HEIGHT - msg->ranges[i] * cos(j * this->angle_resolution);
-  }
-
-  for (int i = ANGLE_CENTER + 1, j = 1; i <= LDS_MAX; ++i, ++j)
-  {
-    this->point_width[i] = msg->ranges[i] * tan(j * this->angle_resolution);
-  }
-  for (int i = ANGLE_CENTER, j = 0; i >= LDS_MIN; --i, ++j)
-  {
-    this->point_width[i] = -msg->ranges[i] * tan(j * this->angle_resolution);
+    // angel += this->angle_resolution;
+    if (msg->ranges[i] <= this->max_range)
+      this->z_offset[i] = LDS_HEIGHT - msg->ranges[i] * cos(angel);
+    else
+      this->z_offset[i] = 0.0;
+    angel += this->angle_resolution;
   }
 
+
+  for (int i = 0, angel = this->min_angle; i < LDS_SAMPLES; ++i)
+  {
+    if (msg->ranges[i] <= this->max_range)
+      this->x_offset[i] = msg->ranges[i] * tan(angel);
+    else
+      this->x_offset[i] = LDS_OUTOF_RANGE + 1;
+    angel += this->angle_resolution;
+  }
+ 
 }
 
 
@@ -74,36 +81,7 @@ LdsSense::LdsSense(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 
 
-/*
 
-Header header            # timestamp in the header is the acquisition time of 
-                         # the first ray in the scan.
-                         #
-                         # in frame frame_id, angles are measured around 
-                         # the positive Z axis (counterclockwise, if Z is up)
-                         # with zero angle being forward along the x axis
-                         
-float32 angle_min        # start angle of the scan [rad]
-float32 angle_max        # end angle of the scan [rad]
-float32 angle_increment  # angular distance between measurements [rad]
-
-float32 time_increment   # time between measurements [seconds] - if your scanner
-                         # is moving, this will be used in interpolating position
-                         # of 3d points
-float32 scan_time        # time between scans [seconds]
-
-float32 range_min        # minimum range value [m]
-float32 range_max        # maximum range value [m]
-
-float32[] ranges         # range data [m] (Note: values < range_min or > range_max should be discarded)
-float32[] intensities    # intensity data [device-specific units].  If your
-                         # device does not provide intensities, please leave
-                         # the array empty.
-
-
-
-
-*/
 
 
 

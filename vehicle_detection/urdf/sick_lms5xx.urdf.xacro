@@ -95,7 +95,7 @@
           <alwaysOn>true</alwaysOn>
           <updateRate>${update_rate}</updateRate>
           <topicName>${ros_topic}</topicName>
-          <frameName>${link}</frameName>
+          <frameName>lds_scan</frameName>
         </plugin>
       </sensor>
     </gazebo>

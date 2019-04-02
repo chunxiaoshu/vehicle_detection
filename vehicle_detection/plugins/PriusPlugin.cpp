@@ -496,9 +496,6 @@ void PriusPlugin::Update()
 
 
 
-
-
-
   // direction control
   // input: this->dataPtr->handWheelCmd, output: the force
 
@@ -524,8 +521,6 @@ void PriusPlugin::Update()
   double frwsError = this->dataPtr->frSteeringAngle - this->dataPtr->frWheelSteeringCmd;
   double frwsCmd = this->dataPtr->frWheelSteeringPID.Update(frwsError, dt);
   this->dataPtr->frWheelSteeringJoint->SetForce(0, frwsCmd);
-
-
 
 
 
