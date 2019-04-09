@@ -10,20 +10,20 @@
 
 ## running
 
-`mkdir -p ~/Documents/ros/vehicle_detection/src`
-`cd ~/Documents/ros/vehicle_detection/src`
-`git clone git@github.com:chunxiaoshu/vehicle_detection.git`
-`cd ~/Documents/ros/vehicle_detection`
-`catkin_make`
-`source devel/setup.bash`
-`roslaunch vehicle_detection demo.launch`
+1. `mkdir -p ~/Documents/ros/vehicle_detection/src`
+2. `cd ~/Documents/ros/vehicle_detection/src`
+3. `git clone git@github.com:chunxiaoshu/vehicle_detection.git`
+4. `cd ~/Documents/ros/vehicle_detection`
+5. `catkin_make`
+6. `source devel/setup.bash`
+7. `roslaunch vehicle_detection demo.launch`
 
 1. 设置是否打开gazebo界面
-在 demo.launch 文件中设置值为 false 不启用 rviz
-<arg name="gui" default="false"/>
+    * 在 demo.launch 文件中设置值为 false 不启用 rviz
+    * `<arg name="gui" default="false"/>`
 
 2. 设置是否启用rviz可视化
-在 demo.launch 文件中注释下面语句不启用 rviz
-<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+    * 在 demo.launch 文件中注释下面语句不启用 rviz
+    * `<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />`
 
 3. 目前没有设置车辆方向变化
