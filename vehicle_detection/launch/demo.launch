@@ -11,7 +11,7 @@
   <arg name="car" value="$(find vehicle_description)/urdf/prius.urdf"/>
 
 
-  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <!-- start with a empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
     <arg name="world_name" value="$(find vehicle_detection)/worlds/empty.world"/>
     <arg name="debug" value="$(arg debug)" />
@@ -23,29 +23,22 @@
 
   <!-- Two lds models -->
   <arg name="lds_verticle_model" default="$(find vehicle_detection)/urdf/lds_verticle.urdf.xacro"/>
-  <param name="lds_verticle_description" command="$(find xacro)/xacro.py $(arg lds_verticle_model)" />
+  <param name="lds_verticle_description" command="$(find xacro)/xacro.py -i $(arg lds_verticle_model)" />
   <node name="lds_verticle" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
       args="-urdf -model lds_verticle -param lds_verticle_description 
       -x 0 -y 0 -z 5.5 -R 0 -P 1.570796 -Y 0"/> 
 
   <arg name="lds_parallel_model" default="$(find vehicle_detection)/urdf/lds_parallel.urdf.xacro"/>
-  <param name="lds_parallel_description" command="$(find xacro)/xacro.py $(arg lds_parallel_model)" />
+  <param name="lds_parallel_description" command="$(find xacro)/xacro.py -i $(arg lds_parallel_model)" />
   <node name="lds_parallel" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
       args="-urdf -model lds_parallel -param lds_parallel_description 
-      -x 0.2 -y 0 -z 5.5 -R 0 -P 1.570796 -Y 1.570796"/> 
+      -x 0.2 -y 0 -z 5.5 -R 0 -P 1.570796 -Y 1.570796"/>
 
-
-
-  <!-- <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" /> -->
-
-
-  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <!-- spawn a car model -->
   <node name="prius" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
       args="-file $(arg car) -urdf -model prius -x -10 -y 0 -z 0"/>
 
-
+  <!-- start rviz node -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
-
-
 
 </launch>

@@ -7,9 +7,6 @@
   <maintainer email="zlk@todo.todo">zlk</maintainer>
   <license>TODO</license>
 
-  <!-- <url type="website">http://wiki.ros.org/gazebo_vehicle</url> -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>gazebo_ros</build_depend>

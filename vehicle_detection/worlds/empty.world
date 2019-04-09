@@ -1,4 +1,4 @@
-<sdf version='1.6'>
+<sdf version='1.5'>
   <world name='default'>
   <gui fullscreen='0'>
     <plugin name='keyboard' filename='libKeyboardGUIPlugin.so'/>
@@ -19,16 +19,6 @@
     <real_time_factor>1</real_time_factor>
     <real_time_update_rate>1000</real_time_update_rate>
   </physics>
-
-  <!-- <include>
-    <uri>model://prius</uri>
-    <name>prius</name>
-  </include> -->
-
-  <!-- <include>
-    <uri>model://lds</uri>
-    <name>lds</name>
-  </include> -->
 
   <!-- <state world_name='default'>
     <sim_time>150 517000000</sim_time>

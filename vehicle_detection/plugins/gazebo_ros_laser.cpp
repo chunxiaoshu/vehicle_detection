@@ -4,6 +4,10 @@
 #include <gazebo_plugins/gazebo_ros_laser.h>
 #include <gazebo_plugins/gazebo_ros_utils.h>
 
+#include <ignition/math/Pose3.hh>
+#include <ignition/transport/Node.hh>
+#include <ignition/transport/AdvertiseOptions.hh>
+
 #include <gazebo/physics/World.hh>
 #include <gazebo/physics/HingeJoint.hh>
 #include <gazebo/sensors/Sensor.hh>
