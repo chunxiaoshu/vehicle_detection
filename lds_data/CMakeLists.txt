@@ -31,11 +31,11 @@ catkin_package(
 
 
 
-
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
+
 
 add_executable(lds_data src/lds_data.cpp)
 target_link_libraries(lds_data ${catkin_LIBRARIES})

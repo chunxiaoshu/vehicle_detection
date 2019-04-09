@@ -44,7 +44,7 @@
       args="-file $(arg car) -urdf -model prius -x -10 -y 0 -z 0"/>
 
 
-  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /> -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
 
 

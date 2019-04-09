@@ -18,3 +18,14 @@ vehicle detection in ros
 
 
 
+running
+
+`mkdir -p ~/Documents/ros/vehicle_detection/src`
+`cd ~/Documents/ros/vehicle_detection/src`
+`git clone git@github.com:chunxiaoshu/vehicle_detection.git`
+`cd ~/Documents/ros/vehicle_detection`
+`catkin_make`
+`source devel/setup.bash`
+`roslaunch vehicle_detection demo.launch`
+
+
