@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot name="lds_xy"
+  xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find lds_data)/urdf/sick_lms5xx.urdf.xacro" />
+
+  <xacro:sick_lms_5 name="lds_parallel" ros_topic="/laser_scan/lds_parallel"
+    length="0.159277" width="0.155002" height="0.196397" mass="3.7" x_offset="0.079205" z_offset="-0.053449"
+    update_rate="50.0" samples="761" min_angle="-1.658062761" max_angle="1.658062761" 
+    min_range="0.2" max_range="26" range_resolution="0.008" gaussianNoise="0.005"/>
+
+    <xacro:sick_lms_5 name="lds_verticle" ros_topic="/laser_scan/lds_verticle"
+    length="0.159277" width="0.155002" height="0.196397" mass="3.7" x_offset="0.079205" z_offset="-0.053449"
+    update_rate="50.0" samples="761" min_angle="-1.658062761" max_angle="1.658062761" 
+    min_range="0.2" max_range="26" range_resolution="0.008" gaussianNoise="0.005"/>
+
+</robot>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <arg name="rvizconfig" default="$(find vehicle_gazebo_simu)/rviz/lds.rviz" />
+  <arg name="car" value="$(find vehicle_description)/urdf/prius.urdf"/>
+
+
+  <!-- start with a empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
+    <arg name="world_name" value="$(find vehicle_gazebo_simu)/worlds/empty.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Two lds models -->
+  <arg name="lds_model" default="$(find vehicle_gazebo_simu)/urdf/lds_verticle.urdf.xacro"/>
+  <param name="lds_description" command="$(find xacro)/xacro.py -i $(arg lds_model)" />
+  <node name="lds_verticle" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-urdf -model lds -param lds_description 
+      -x 0 -y 0 -z 5.5 -R 0 -P 1.570796 -Y 0"/> 
+
+  <!-- spawn a car model -->
+  <node name="prius" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-file $(arg car) -urdf -model prius -x -10 -y 0 -z 0"/>
+
+  <!-- start rviz node -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>

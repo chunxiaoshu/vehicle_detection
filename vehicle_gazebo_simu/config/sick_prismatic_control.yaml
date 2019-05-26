@@ -1,0 +1,12 @@
+sick5xx_prismatic:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+
+  # Position Controllers ---------------------------------------
+  sick5xx_prismatic_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: sick5xx_prismatic
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+

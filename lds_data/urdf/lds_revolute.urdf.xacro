@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot name="lds"
+  xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="update_rate" value="25"/>
+
+  <xacro:include filename="$(find lds_data)/urdf/sick_lms5xx.urdf.xacro" />
+  <xacro:sick_lms_5 name="sick_5xx" ros_topic="/sick5xx_topic"
+    length="0.159277" width="0.155002" height="0.196397" mass="3.7" x_offset="0.079205" z_offset="-0.053449"
+    update_rate="${update_rate}" samples="761" min_angle="-1.658062761" max_angle="1.658062761" 
+    min_range="0.2" max_range="26" range_resolution="0.008" gaussianNoise="0.005"/>
+
+  <link name="world"/>
+  <joint name="sick5xx_revolute" type="revolute">
+    <parent link="world"/>
+    <child link="sick_5xx_mount_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.570796" upper="1.570796" effort="11" velocity="0.0348"/>
+  </joint>
+
+  <transmission name="sick5xx_revolute_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="sick5xx_revolute">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>   
+    </joint>
+    <actuator name="5xx_revolute_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <gazebo>
+    <plugin name="gazebo_ros_5xx_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>sick5xx_revolute</jointName>
+      <robotNamespace>sick5xx_revolute</robotNamespace>
+      <updateRate>${update_rate}</updateRate>
+    </plugin>
+  </gazebo>
+  
+  <gazebo>
+    <plugin name="gazebo_ros_5xx_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/sick5xx_revolute</robotNamespace>
+      <!-- <robot_description>lds_description_revolute</robot_description> -->
+    </plugin>
+  </gazebo> 
+
+</robot>
