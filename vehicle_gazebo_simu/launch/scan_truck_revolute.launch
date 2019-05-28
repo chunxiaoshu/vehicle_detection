@@ -26,7 +26,7 @@
   <arg name="lds_model_revolute" default="$(find lds_data)/urdf/lds_revolute.urdf.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro.py -i $(arg lds_model_revolute)" />
   <node name="lds" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-      args="-urdf -model lds -param robot_description -x 0 -y 0 -z 5.5 -R 0 -P 1.570796 -Y 0"/> 
+      args="-urdf -model lds -param robot_description -x 0 -y 0 -z 5.5 -R 0 -P 0 -Y 0"/> 
   
   <!-- Load joint controller configurations from YAML file to parameter server -->
   <rosparam file="$(find vehicle_gazebo_simu)/config/sick_revolute_control.yaml" command="load"/>
@@ -35,8 +35,11 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
     output="screen" ns="/sick5xx_revolute" args="sick5xx_revolute_position_controller joint_state_controller"/>
 
+  <!-- start lds transfer node -->
+  <!-- <node name="lds_revolute_data" pkg="lds_data" type="lds_revolute_data"/> -->
+
   <!-- start rviz node -->
-  <!-- <arg name="rvizconfig" default="$(find vehicle_gazebo_simu)/rviz/lds.rviz" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /> -->
+  <arg name="rvizconfig" default="$(find vehicle_gazebo_simu)/rviz/lds.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
 </launch>
