@@ -36,7 +36,7 @@
     output="screen" ns="/sick5xx_prismatic" args="sick5xx_prismatic_position_controller joint_state_controller"/>
 
   <!-- start lds transfer node -->
-  <node name="lds_prismatic_data" pkg="lds_data" type="lds_prismatic_data"/>
+  <!-- <node name="lds_prismatic_data" pkg="lds_data" type="lds_prismatic_data"/> -->
 
   <!-- start rviz node -->
   <arg name="rvizconfig" default="$(find vehicle_gazebo_simu)/rviz/lds.rviz" />

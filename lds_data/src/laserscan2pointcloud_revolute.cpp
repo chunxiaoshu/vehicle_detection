@@ -20,6 +20,7 @@
 
 double joint_position;
 bool lds_ready = false;
+bool lds_stop = false;
 sensor_msgs::PointCloud point_save;
 int i = 0;
 ros::Time begin_time;
@@ -30,10 +31,12 @@ public:
 	void ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
 	void ldsPosCallback(const sensor_msgs::JointState::ConstPtr& joint_states);
 	void ldsreadysubCallback(const std_msgs::Bool::ConstPtr& lds_ready_msg);
+	void ldsstopsubCallback(const std_msgs::Bool::ConstPtr& lds_ready_msg);
 private:
 	ros::NodeHandle ldsToPclNode;
 	ros::Subscriber lds_sub;
 	ros::Subscriber lds_ready_sub;
+	ros::Subscriber lds_stop_sub;
 	ros::Subscriber lds_joint_state;
 	ros::Publisher point_cloud_publisher;
 };
@@ -41,13 +44,14 @@ private:
 LdsToPcl::LdsToPcl(){
 	lds_sub = ldsToPclNode.subscribe<sensor_msgs::LaserScan> ("/sick5xx_topic", 100, &LdsToPcl::ldssubCallback, this);
 	lds_ready_sub = ldsToPclNode.subscribe<std_msgs::Bool> ("/sick5xx/ready", 1, &LdsToPcl::ldsreadysubCallback, this);
+	lds_stop_sub = ldsToPclNode.subscribe<std_msgs::Bool> ("/sick5xx/stop", 1, &LdsToPcl::ldsstopsubCallback, this);
 	lds_joint_state = ldsToPclNode.subscribe<sensor_msgs::JointState> ("/sick5xx_revolute/joint_states", 100, &LdsToPcl::ldsPosCallback, this);
 	point_cloud_publisher = ldsToPclNode.advertise<sensor_msgs::PointCloud> ("/cloud", 100, false);
 }
 
 void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
-	const int point_num = 761;
-	const int save_point_num = 261;
+	const int point_num = 1138;
+	const int save_point_num = 400;
 	const int save_point_min = (point_num - save_point_num) / 2;
 	const int save_point_max = (point_num - save_point_num) / 2;
 	const double lds_height = 5.0;
@@ -66,7 +70,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 		begin_time = ros::Time::now();
 	}
 	
-	if (lds_ready && i < 2000)
+	if (lds_ready && (!lds_stop) && i < 3400)
 	{
 		// std::cout << "angle_min = " << angle_min << std::endl;
 		// std::cout << "angle_max = " << angle_max << std::endl;
@@ -83,8 +87,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 		point_save.channels.resize(1);
 		point_save.points.resize(point_count_new);
 		point_save.channels[0].values.resize(point_count_new);
-		std::cout << "i = " << i << "      point_count_new = " << point_count_new
-			<< "      joint_position = " << joint_position << std::endl;
+		
 
 		for (int n = 0; n < save_point_num; ++n)
 		{
@@ -113,15 +116,23 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 				point_save.points[point_count].z = 0;
 			}
 		}
+
 		i++;
+		ros::Time end_time = ros::Time::now();
+		float during_time = (end_time.sec - begin_time.sec) * 1e3 + (end_time.nsec - begin_time.nsec) / 1e6;
+		std::cout << "i = " << i 
+			<< ", point_count_new = " << point_count_new
+			<< ", joint_position = " << joint_position 
+			<< ", scan time = " << during_time 
+			<< std::endl;
 		point_cloud_publisher.publish(point_save);
 	}
 
-	if (i == 2000)
+	if (i == 3400 || lds_stop)
 	{
 		ros::Time end_time = ros::Time::now();
 		
-		int during_time = (end_time.sec - begin_time.sec) * 1e3 + (end_time.nsec - begin_time.nsec) / 1e6;
+		float during_time = (end_time.sec - begin_time.sec) * 1e3 + (end_time.nsec - begin_time.nsec) / 1e6;
 
 		sensor_msgs::PointCloud2 point_save2;
 		sensor_msgs::convertPointCloudToPointCloud2(point_save, point_save2);
@@ -148,6 +159,11 @@ void LdsToPcl::ldsPosCallback(const sensor_msgs::JointState::ConstPtr& joint_sta
 void LdsToPcl::ldsreadysubCallback(const std_msgs::Bool::ConstPtr& lds_ready_msg)
 {
 	lds_ready = lds_ready_msg->data;
+}
+
+void LdsToPcl::ldsstopsubCallback(const std_msgs::Bool::ConstPtr& lds_stop_msg)
+{
+	lds_stop = lds_stop_msg->data;
 }
 
 int main(int argc, char** argv)
