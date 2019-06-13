@@ -32,3 +32,6 @@ target_link_libraries( lds_prismatic_data ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
 add_executable( lds_revolute_data src/laserscan2pointcloud_revolute.cpp)
 target_link_libraries( lds_revolute_data ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
 
+add_executable( lds_revolute_circle_data src/laserscan2pointcloud_revolute_circle.cpp)
+target_link_libraries( lds_revolute_circle_data ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+

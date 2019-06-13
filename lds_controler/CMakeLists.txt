@@ -27,3 +27,6 @@ target_link_libraries( lds_prismatic_control ${catkin_LIBRARIES} ${PCL_LIBRARIES
 
 add_executable( lds_revolute_control src/lds_revolute.cpp )
 target_link_libraries( lds_revolute_control ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+
+add_executable( lds_revolute_circle_control src/lds_revolute_circle.cpp )
+target_link_libraries( lds_revolute_circle_control ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
