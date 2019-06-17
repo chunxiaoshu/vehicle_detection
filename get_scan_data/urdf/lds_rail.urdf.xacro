@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<robot name="lds_rail" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="update_rate" value="25"/>
+
+  <xacro:include filename="$(find get_scan_data)/urdf/sick_lms5xx.urdf.xacro" />
+  <xacro:sick_lms_5 name="sick_5xx" ros_topic="/lds_scan_data"
+    length="0.159277" width="0.155002" height="0.196397" mass="3.7" x_offset="0.079205" z_offset="-0.053449"
+    update_rate="${update_rate}" samples="1081" min_angle="-2.3561925" max_angle="2.3561925" 
+    min_range="0.5" max_range="25" range_resolution="0.03" gaussianNoise="0.005"/>
+
+  <link name="world"/>
+  <joint name="lds_rail" type="prismatic">
+    <parent link="world"/>
+    <child link="sick_5xx_mount_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.79769e+308" upper="1.79769e+308" effort="11" velocity="0.5"/>
+  </joint>
+
+  <transmission name="lds_rail_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="lds_rail">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>   
+    </joint>
+    <actuator name="lds_rail_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <gazebo>
+    <plugin name="gazebo_lds_joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <jointName>lds_rail</jointName>
+      <robotNamespace>lds_rail</robotNamespace>
+      <updateRate>${update_rate}</updateRate>
+    </plugin>
+  </gazebo>
+  
+  <gazebo>
+    <plugin name="gazebo_lds_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/lds_rail</robotNamespace>
+      <!-- <robot_description>lds_description_revolute</robot_description> -->
+    </plugin>
+  </gazebo>
+
+</robot>

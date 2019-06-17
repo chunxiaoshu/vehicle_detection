@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(vehicle_description)
+cmake_minimum_required( VERSION 2.8.3 )
+project( vehicle_description )
 
-add_compile_options(-std=c++11)
+add_compile_options( -std=c++11 )
 
-find_package(gazebo REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
+find_package( gazebo REQUIRED )
+find_package( catkin REQUIRED COMPONENTS
   gazebo_ros
 )
 
