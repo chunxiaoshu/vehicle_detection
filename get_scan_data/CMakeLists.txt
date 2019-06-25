@@ -32,6 +32,11 @@ target_link_libraries( get_lds_data_holder ${catkin_LIBRARIES} ${PCL_LIBRARIES} 
 add_executable( get_lds_data_rail src/get_lds_data_rail.cpp )
 target_link_libraries( get_lds_data_rail ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
 
+add_executable( get_lds_data_rail_slant src/get_lds_data_rail_slant.cpp )
+target_link_libraries( get_lds_data_rail_slant ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+
 add_executable( get_lds_data_revolute src/get_lds_data_revolute.cpp )
 target_link_libraries( get_lds_data_revolute ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
 
+add_executable( get_lds_data_revolute_multi src/get_lds_data_revolute_multi.cpp )
+target_link_libraries( get_lds_data_revolute_multi ${catkin_LIBRARIES} ${PCL_LIBRARIES} )

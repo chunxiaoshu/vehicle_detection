@@ -1,31 +1,28 @@
 # vehicle detection in ros
 
 ## description
-车辆从-10位置处沿着x轴正方向运行，LDS在车辆上方 10m 处
-
-在vehicle_description中建立车辆模型
-在vehicle_detection中建立仿真环境
-在lds_data中读取数据并处理
-
-1. 设置是否打开gazebo界面
-    * 在 demo.launch 文件中设置值为 false 不启用 rviz
-    * `<arg name="gui" default="false"/>`
-
-2. 设置是否启用rviz可视化
-    * 在 demo.launch 文件中注释下面语句不启用 rviz
-    * `<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />`
-
-3. 目前没有设置车辆方向变化
+1. 在 vehicle_description 中建立车辆模型
+2. 在 scan_gazebo_simu 中建立 gazebo 仿真环境
+3. 在 get_scan_data 中建立激光扫描仪模型和获取仿真数据
+4. 在 lds_controler 中控制激光扫描仪运动
+5. 在 vehicle_detection 中进行算法处理
+6. 在 pcd_data 中存储仿真点云文件
 
 
 ## running
-
+### 导入文件
 1. `mkdir -p ~/Documents/ros/vehicle_detection/src`
 2. `cd ~/Documents/ros/vehicle_detection/src`
 3. `git clone git@github.com:chunxiaoshu/vehicle_detection.git`
 4. `cd ~/Documents/ros/vehicle_detection`
 5. `catkin_make`
 6. `source devel/setup.bash`
-7. `roslaunch vehicle_detection demo.launch`
 
+### 运行
+1. `roscore`
+2. `roslaunch scan_gazebo_simu scan_truck_rail_slant.launch`
+3. `rosrun get_scan_data get_lds_data_rail_slant`
+4. `rosrun lds_controler lds_rail_control`
 
+### 其他
+1. 设置是否打开gazebo界面：在运行第二条命令的时候加入`--gui=false`

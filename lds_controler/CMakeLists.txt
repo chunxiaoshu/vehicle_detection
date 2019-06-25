@@ -31,3 +31,6 @@ target_link_libraries( lds_rail_control ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
 
 add_executable( lds_revolute_control src/lds_revolute_control.cpp )
 target_link_libraries( lds_revolute_control ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+
+add_executable( lds_revolute_multi_control src/lds_revolute_multi_control.cpp )
+target_link_libraries( lds_revolute_multi_control ${catkin_LIBRARIES} ${PCL_LIBRARIES} )

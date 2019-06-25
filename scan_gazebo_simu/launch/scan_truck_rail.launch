@@ -26,7 +26,7 @@
   <arg name="lds_model_rail" default="$(find get_scan_data)/urdf/lds_rail.urdf.xacro"/>
   <param name="robot_description" command="$(find xacro)/xacro.py -i $(arg lds_model_rail)" />
   <node name="lds" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-      args="-urdf -model lds -param robot_description -x 0 -y 0 -z 5 -R 0 -P 1.570796 -Y 0"/> 
+      args="-urdf -model lds -param robot_description -x 5 -y 0 -z 5 -R 0 -P 1.570796 -Y 0"/> 
   
   <!-- Load joint controller configurations from YAML file to parameter server -->
   <rosparam file="$(find scan_gazebo_simu)/config/sick_rail_control.yaml" command="load"/>

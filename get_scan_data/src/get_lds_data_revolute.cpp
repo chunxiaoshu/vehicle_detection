@@ -50,7 +50,7 @@ LdsToPcl::LdsToPcl() {
 }
 
 void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
-	const int point_num = 1138;
+	const int point_num = 1081;
 	const int save_point_num = 900;
 	const int save_point_min = (point_num - save_point_num) / 2;
 	const int save_point_max = (point_num - save_point_num) / 2;

@@ -50,7 +50,7 @@ LdsToPcl::LdsToPcl() {
 }
 
 void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
-	const int point_num = 1138;
+	const int point_num = 1081;
 	const int save_point_num = 400;
 	const int save_point_min = (point_num - save_point_num) / 2;
 	const int save_point_max = (point_num - save_point_num) / 2;
@@ -69,7 +69,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 		begin_time = ros::Time::now();
 	}
 	
-	if (lds_ready && (!lds_stop) && i < 3400) {
+	if (lds_ready && (!lds_stop) && i < 4000) {
 		// std::cout << "angle_min = " << angle_min << std::endl;
 		// std::cout << "angle_max = " << angle_max << std::endl;
 		// std::cout << "angle_increment = " << angle_increment << std::endl;
@@ -122,7 +122,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 		point_cloud_publisher.publish(point_save);
 	}
 
-	if (i == 3400 || lds_stop) {
+	if (i == 4000 || lds_stop) {
 		ros::Time end_time = ros::Time::now();
 		
 		float during_time = (end_time.sec - begin_time.sec) * 1e3 + (end_time.nsec - begin_time.nsec) / 1e6;
@@ -160,8 +160,8 @@ int main(int argc, char** argv) {
 	ros::init(argc, argv, "LdsToPcl");
 
 	LdsToPcl ldstopcl_node;
-	ros::MultiThreadedSpinner s(2);
-	ros::spin(s);
+	ros::MultiThreadedSpinner spinner(2);
+	spinner.spin();
 
 	return 0;
 }
