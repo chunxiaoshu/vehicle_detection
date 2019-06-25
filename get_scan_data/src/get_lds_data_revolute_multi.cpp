@@ -55,7 +55,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 	const int point_num = 1081;
 	const double lds_height = 5.0;
 	double x_, y_, z_, xy_;
-  int i = 0;
+  	int i = 0;
 
 	float angle_min = scan->angle_min;
 	float angle_max = scan->angle_max;

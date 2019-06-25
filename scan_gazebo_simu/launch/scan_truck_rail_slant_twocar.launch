@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- start with a empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
+    <arg name="world_name" value="$(find scan_gazebo_simu)/worlds/empty.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- spawn two truck model -->
+  <arg name="truck_description" value="$(find vehicle_description)/urdf/truck.urdf"/>
+  <node name="truck1" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-file $(arg truck_description) -urdf -model truck1 -x 0 -y 2 -z 0 -R 0 -P 0 -Y -1.570796"/>
+  <node name="truck2" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-file $(arg truck_description) -urdf -model truck2 -x 0 -y -2 -z 0 -R 0 -P 0 -Y -1.570796"/>
+
+  <!-- spawn a lds models -->
+  <arg name="lds_model_rail" default="$(find get_scan_data)/urdf/lds_rail.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py -i $(arg lds_model_rail)" />
+  <node name="lds" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+      args="-urdf -model lds -param robot_description -x 5 -y 0 -z 5 -R 0 -P 1.570796 -Y 1.570796"/> 
+  
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find scan_gazebo_simu)/config/sick_rail_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/lds_rail" args="lds_rail_position_controller joint_state_controller"/>
+
+  <!-- start lds transfer node -->
+  <!-- <node name="lds_rail_data" pkg="lds_data" type="lds_rail_data"/> -->
+
+  <!-- start rviz node -->
+  <arg name="rvizconfig" default="$(find scan_gazebo_simu)/rviz/lds.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>

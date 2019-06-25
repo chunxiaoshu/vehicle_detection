@@ -31,49 +31,6 @@ using namespace std;
 typedef pcl::PointXYZ PointT;
 typedef pcl::Normal NormalT;
 
-float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_line) {
-	const int high_lengh = 3000;
-	const int height_step = 500;
-	int height_cnt = 0;
-	int height_max = 0;
-	float height_ava = 0;
-	float plane_high[high_lengh] = {0};
-	int plane_high_idx[high_lengh] = {0};
-	int plane_high_distribute[height_step] = {0};
-	for (int i = 0; i < cloud_plane->size(); ++i) {
-		int tmp = static_cast<int>((cloud_plane->points[i].x + 13) * 100);
-		if (plane_high[tmp] < cloud_plane->points[i].z) {
-			plane_high[tmp] = cloud_plane->points[i].z;
-			plane_high_idx[tmp] = i;
-		}
-	}
-
-	for (int i = 0; i < high_lengh; ++i) {
-		if (plane_high[i] > 1.0 && plane_high[i] <= height_step) {
-			int tmp = static_cast<int>(plane_high[i] * 100);
-			++plane_high_distribute[tmp];
-		}
-	}
-
-	for (int i = 1; i < height_step; ++i) {
-		if (height_cnt < plane_high_distribute[i]) {
-			height_cnt = plane_high_distribute[i];
-			height_max = i;
-		}
-	}
-	float height_tmp = static_cast<float>(height_max) / 100;
-
-	for (int i = 0; i < cloud_plane->size(); ++i) {
-		if (abs(cloud_plane->points[i].z - height_tmp) < 0.04) {
-			cloud_line->push_back(cloud_plane->points[i]);
-			height_ava += cloud_plane->points[i].z;
-		}
-	}
-
-	return height_ava / cloud_line->size() + 0.005;
-}
-
-
 int main(int argc, char *argv[]) {
 	// get calculate time
 	clock_t start_Total, finish_Total;
@@ -82,8 +39,7 @@ int main(int argc, char *argv[]) {
 	// [1] load pcd data
 	cout << "loading pcd data..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
-	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail_slant.pcd", *cloud_origin)) {	
-	// if (pcl::io::loadPCDFile<PointT>(argv[1], *cloud_origin)) {
+	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd80.pcd", *cloud_origin)) {	
 		cout << "loading pcd data failed" << endl << endl;
 		return -1;
 	}
@@ -208,11 +164,9 @@ int main(int argc, char *argv[]) {
 	rotation_axis_z /= square_sum;
 	cout << "旋转法向为：(" << rotation_axis_x << "," << rotation_axis_y << "," << rotation_axis_z << ")" << endl;
 
-	//计算需要绕旋转法向旋转的角度
 	float rotation_angle = acos(plane_coefficients_trunk_subface->values[2]);
 	cout << "与旋转法向之间的偏转角度为：" << rotation_angle / M_PI * 180 << "度" << endl;
 
-	//计算旋转矩阵R
 	float x, y, z;
 	x = rotation_axis_x;
 	y = rotation_axis_y;
@@ -232,8 +186,7 @@ int main(int argc, char *argv[]) {
 	printf("        R = | %6.3f %6.3f %6.3f | \n", rotation_Matrix(1, 0), rotation_Matrix(1, 1), rotation_Matrix(1, 2));
 	printf("            | %6.3f %6.3f %6.3f | \n", rotation_Matrix(2, 0), rotation_Matrix(2, 1), rotation_Matrix(2, 2));
 	printf("\n");
-
-	//旋转原始甲板平面点云进行倾角校正
+	
 	pcl::PointCloud<PointT>::Ptr cloud_downsampled_after_revise(new pcl::PointCloud<PointT>());
 	pcl::transformPointCloud(*cloud_downsampled, *cloud_downsampled_after_revise, rotation_Matrix);
 	
@@ -326,23 +279,11 @@ int main(int argc, char *argv[]) {
 	cout << "货车右侧面y位置为" << trunkplane_Ymax << endl << endl;
 	// pcl::io::savePCDFile("../../data/cloud_right.pcd", *trunk_plane_right, false);
 
-	pcl::PointCloud<PointT>::Ptr trunk_line_back(new pcl::PointCloud<PointT>());
-	pcl::PointCloud<PointT>::Ptr trunk_line_front(new pcl::PointCloud<PointT>());
-	pcl::PointCloud<PointT>::Ptr trunk_line_right(new pcl::PointCloud<PointT>());
-	pcl::PointCloud<PointT>::Ptr trunk_line_left(new pcl::PointCloud<PointT>());
-
-	float left_height = get_height(trunk_plane_left, trunk_line_left);
-	cout << "货车左侧面高度为" << left_height << endl << endl;
-	float right_height = get_height(trunk_plane_right, trunk_line_right);
-	cout << "货车右侧面高度为" << right_height << endl << endl;
-
 	// [10] result
 	float trunk_length = trunkplane_Xmax - trunkplane_Xmin;
 	float trunk_width = trunkplane_Ymax - trunkplane_Ymin;
-	float trunk_height = (left_height + right_height) / 2 - trunk_subface_height; 
 	cout << "货车的长度为" << trunk_length << endl << endl;
 	cout << "货车的宽度为" << trunk_width << endl << endl;
-	cout << "货车的高度为" << trunk_height << endl << endl;
 
 	pcl::visualization::PCLVisualizer viewers("Cloud Viewer");
 	viewers.addCoordinateSystem();
@@ -350,28 +291,24 @@ int main(int argc, char *argv[]) {
 
 	// viewers.addPointCloudNormals<pcl::PointXYZ, NormalT>(cloud_downsampled, cloud_normals);
 
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_after_revise, 255, 255, 255);
-	// viewers.addPointCloud<PointT>(cloud_downsampled_after_revise, oricloud_color_handlers, "original cloud");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_after_revise, 255, 255, 255);
+	viewers.addPointCloud<PointT>(cloud_downsampled_after_revise, oricloud_color_handlers, "original cloud");
 
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud1_color_handlers(cloud_trunk_subface_after_revise, 255, 0, 0);
-	// viewers.addPointCloud<PointT>(cloud_trunk_subface_after_revise, cloud1_color_handlers, "cloud1");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud1_color_handlers(cloud_trunk_subface_after_revise, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_trunk_subface_after_revise, cloud1_color_handlers, "cloud1");
 
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud2_color_handlers(trunk_plane_back, 0, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_plane_back, cloud2_color_handlers, "cloud2");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud2_color_handlers(trunk_plane_back, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_back, cloud2_color_handlers, "cloud2");
 
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud3_color_handlers(trunk_plane_front, 0, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_plane_front, cloud3_color_handlers, "cloud3");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud3_color_handlers(trunk_plane_front, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_plane_front, cloud3_color_handlers, "cloud3");
 
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud4_color_handlers(trunk_plane_right, 255, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_plane_right, cloud4_color_handlers, "cloud4");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud4_color_handlers(trunk_plane_right, 255, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_right, cloud4_color_handlers, "cloud4");
 
 	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud5_color_handlers(trunk_plane_left, 0, 255, 255);
 	viewers.addPointCloud<PointT>(trunk_plane_left, cloud5_color_handlers, "cloud5");
 
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud6_color_handlers(trunk_line_left, 255, 0, 0);
-	viewers.addPointCloud<PointT>(trunk_line_left, cloud6_color_handlers, "cloud6");
-
 	viewers.spin();
 	return 0;
 }
-
