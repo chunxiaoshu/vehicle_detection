@@ -1,4 +1,4 @@
-# Install script for directory: /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl
+# Install script for directory: /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

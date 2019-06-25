@@ -268,7 +268,9 @@ CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/feature.h
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/impl/feature.hpp
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/impl/normal_3d.hpp
+CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/impl/normal_3d_omp.hpp
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/normal_3d.h
+CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/features/normal_3d_omp.h
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/filters/boost.h
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/filters/conditional_removal.h
 CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.o: /usr/include/pcl-1.8/pcl/filters/extract_indices.h

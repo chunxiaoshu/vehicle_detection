@@ -54,10 +54,84 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl
+CMAKE_SOURCE_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build
+CMAKE_BINARY_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build
+
+#=============================================================================
+# Target rules for target CMakeFiles/vh_detect_revolute.dir
+
+# All Build rule for target.
+CMakeFiles/vh_detect_revolute.dir/all:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/depend
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles --progress-num=7,8 "Built target vh_detect_revolute"
+.PHONY : CMakeFiles/vh_detect_revolute.dir/all
+
+# Include target in all.
+all: CMakeFiles/vh_detect_revolute.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/vh_detect_revolute.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vh_detect_revolute.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 0
+.PHONY : CMakeFiles/vh_detect_revolute.dir/rule
+
+# Convenience name for target.
+vh_detect_revolute: CMakeFiles/vh_detect_revolute.dir/rule
+
+.PHONY : vh_detect_revolute
+
+# clean rule for target.
+CMakeFiles/vh_detect_revolute.dir/clean:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/clean
+.PHONY : CMakeFiles/vh_detect_revolute.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/vh_detect_revolute.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/vh_detect_rail.dir
+
+# All Build rule for target.
+CMakeFiles/vh_detect_rail.dir/all:
+	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/depend
+	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles --progress-num=5,6 "Built target vh_detect_rail"
+.PHONY : CMakeFiles/vh_detect_rail.dir/all
+
+# Include target in all.
+all: CMakeFiles/vh_detect_rail.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/vh_detect_rail.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vh_detect_rail.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 0
+.PHONY : CMakeFiles/vh_detect_rail.dir/rule
+
+# Convenience name for target.
+vh_detect_rail: CMakeFiles/vh_detect_rail.dir/rule
+
+.PHONY : vh_detect_rail
+
+# clean rule for target.
+CMakeFiles/vh_detect_rail.dir/clean:
+	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/clean
+.PHONY : CMakeFiles/vh_detect_rail.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/vh_detect_rail.dir/clean
+
+.PHONY : clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/vh_detect_holder.dir
@@ -66,7 +140,7 @@ CMAKE_BINARY_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detecti
 CMakeFiles/vh_detect_holder.dir/all:
 	$(MAKE) -f CMakeFiles/vh_detect_holder.dir/build.make CMakeFiles/vh_detect_holder.dir/depend
 	$(MAKE) -f CMakeFiles/vh_detect_holder.dir/build.make CMakeFiles/vh_detect_holder.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles --progress-num=1,2 "Built target vh_detect_holder"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles --progress-num=1,2 "Built target vh_detect_holder"
 .PHONY : CMakeFiles/vh_detect_holder.dir/all
 
 # Include target in all.
@@ -76,9 +150,9 @@ all: CMakeFiles/vh_detect_holder.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/vh_detect_holder.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vh_detect_holder.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 0
 .PHONY : CMakeFiles/vh_detect_holder.dir/rule
 
 # Convenience name for target.
@@ -97,39 +171,39 @@ clean: CMakeFiles/vh_detect_holder.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/vh_detect_rail.dir
+# Target rules for target CMakeFiles/vh_detect_holder_reprocess.dir
 
 # All Build rule for target.
-CMakeFiles/vh_detect_rail.dir/all:
-	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/depend
-	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles --progress-num=3,4 "Built target vh_detect_rail"
-.PHONY : CMakeFiles/vh_detect_rail.dir/all
+CMakeFiles/vh_detect_holder_reprocess.dir/all:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/depend
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles --progress-num=3,4 "Built target vh_detect_holder_reprocess"
+.PHONY : CMakeFiles/vh_detect_holder_reprocess.dir/all
 
 # Include target in all.
-all: CMakeFiles/vh_detect_rail.dir/all
+all: CMakeFiles/vh_detect_holder_reprocess.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/vh_detect_rail.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles 2
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vh_detect_rail.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles 0
-.PHONY : CMakeFiles/vh_detect_rail.dir/rule
+CMakeFiles/vh_detect_holder_reprocess.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/vh_detect_holder_reprocess.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 0
+.PHONY : CMakeFiles/vh_detect_holder_reprocess.dir/rule
 
 # Convenience name for target.
-vh_detect_rail: CMakeFiles/vh_detect_rail.dir/rule
+vh_detect_holder_reprocess: CMakeFiles/vh_detect_holder_reprocess.dir/rule
 
-.PHONY : vh_detect_rail
-
-# clean rule for target.
-CMakeFiles/vh_detect_rail.dir/clean:
-	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/clean
-.PHONY : CMakeFiles/vh_detect_rail.dir/clean
+.PHONY : vh_detect_holder_reprocess
 
 # clean rule for target.
-clean: CMakeFiles/vh_detect_rail.dir/clean
+CMakeFiles/vh_detect_holder_reprocess.dir/clean:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/clean
+.PHONY : CMakeFiles/vh_detect_holder_reprocess.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/vh_detect_holder_reprocess.dir/clean
 
 .PHONY : clean
 

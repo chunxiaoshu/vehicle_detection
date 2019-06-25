@@ -7,6 +7,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/filters/filter.h>
@@ -78,79 +79,74 @@ int main(int argc, char *argv[]) {
 	clock_t start_Total, finish_Total;
 	start_Total = clock();
 
-	// // [1] load pcd data
-	// cout << "loading pcd data..." << endl;
-	// pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
-	// if (pcl::io::loadPCDFile<PointT>("../../data/test_pcd80.pcd", *cloud_origin)) {
-	// 	cout << "loading pcd data failed" << endl << endl;
-	// 	return -1;
-	// }
-	// else {
-	// 	cout << "loading pcd data success" << endl << endl;
-	// 	cout << "cloud size origin: " << cloud_origin->size() << endl;
-	// }
+	// [1] load pcd data
+	cout << "loading pcd data..." << endl;
+	pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
+	// if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail_slant.pcd", *cloud_origin)) {	
+	if (pcl::io::loadPCDFile<PointT>(argv[1], *cloud_origin)) {
+		cout << "loading pcd data failed" << endl << endl;
+		return -1;
+	}
+	else {
+		cout << "loading pcd data success" << endl << endl;
+		cout << "cloud size origin: " << cloud_origin->size() << endl;
+	}
 
-	// // [2] passthrough filter
-	// // x passthrough filter
-	// pcl::PointCloud<PointT>::Ptr cloud_after_x_filter(new pcl::PointCloud<PointT>());
-	// pcl::ConditionAnd<PointT>::Ptr x_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
-	// x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-	// 	new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::GE, -6.5)));
-	// x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-	// 	new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::LE, 4.5)));
-	// pcl::ConditionalRemoval<PointT> cloud_filter_x(false);
-	// cloud_filter_x.setCondition(x_passthrough_filter_cond);
-	// cloud_filter_x.setInputCloud(cloud_origin);
-	// cloud_filter_x.setKeepOrganized(true);
-	// cloud_filter_x.filter(*cloud_after_x_filter);
-	// // y passthrough filter
-	// pcl::PointCloud<PointT>::Ptr cloud_after_y_filter(new pcl::PointCloud<PointT>());
-	// pcl::ConditionAnd<PointT>::Ptr y_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
-	// y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-	// 	new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::GE, -1.5)));
-	// y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-	// 	new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::LE, 1.5)));
-	// pcl::ConditionalRemoval<PointT> cloud_filter_y(false);
-	// cloud_filter_y.setCondition(y_passthrough_filter_cond);
-	// cloud_filter_y.setInputCloud(cloud_after_x_filter);
-	// cloud_filter_y.setKeepOrganized(true);
-	// cloud_filter_y.filter(*cloud_after_y_filter);
-	// // nan passthrough filter
-	// pcl::PointCloud<PointT>::Ptr cloud_remove_nan(new pcl::PointCloud<PointT>());
-	// std::vector<int> indices_Pulse;
-	// pcl::removeNaNFromPointCloud(*cloud_after_y_filter, *cloud_remove_nan, indices_Pulse);
-	// cout << "cloud size after passthrough filter: " << cloud_remove_nan->size() << endl << endl;
+	// [2] passthrough filter
+	// x passthrough filter
+	pcl::PointCloud<PointT>::Ptr cloud_after_x_filter(new pcl::PointCloud<PointT>());
+	pcl::ConditionAnd<PointT>::Ptr x_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
+	x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
+		new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::GE, -9.5)));
+	x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
+		new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::LE, 1.5)));
+	pcl::ConditionalRemoval<PointT> cloud_filter_x(false);
+	cloud_filter_x.setCondition(x_passthrough_filter_cond);
+	cloud_filter_x.setInputCloud(cloud_origin);
+	cloud_filter_x.setKeepOrganized(true);
+	cloud_filter_x.filter(*cloud_after_x_filter);
+	// y passthrough filter
+	pcl::PointCloud<PointT>::Ptr cloud_after_y_filter(new pcl::PointCloud<PointT>());
+	pcl::ConditionAnd<PointT>::Ptr y_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
+	y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
+		new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::GE, -1.5)));
+	y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
+		new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::LE, 1.5)));
+	pcl::ConditionalRemoval<PointT> cloud_filter_y(false);
+	cloud_filter_y.setCondition(y_passthrough_filter_cond);
+	cloud_filter_y.setInputCloud(cloud_after_x_filter);
+	cloud_filter_y.setKeepOrganized(true);
+	cloud_filter_y.filter(*cloud_after_y_filter);
+	// nan passthrough filter
+	pcl::PointCloud<PointT>::Ptr cloud_remove_nan(new pcl::PointCloud<PointT>());
+	std::vector<int> indices_Pulse;
+	pcl::removeNaNFromPointCloud(*cloud_after_y_filter, *cloud_remove_nan, indices_Pulse);
+	cout << "cloud size after passthrough filter: " << cloud_remove_nan->size() << endl << endl;
 
-	// // [3] voxel grid downsample
-	// pcl::PointCloud<PointT>::Ptr cloud_downsampled(cloud_remove_nan);
-	// // pcl::PointCloud<PointT>::Ptr cloud_downsampled(new pcl::PointCloud<PointT>);
-	// // pcl::VoxelGrid<PointT> downsampled;
-	// // downsampled.setInputCloud(cloud_remove_nan);
-	// // downsampled.setLeafSize(0.01, 0.01, 0.01);
-	// // downsampled.filter(*cloud_downsampled);
-	// // cout << "cloud size after downsampled: " << cloud_downsampled->size() << endl << endl;
+	// [3] voxel grid downsample
+	pcl::PointCloud<PointT>::Ptr cloud_downsampled(cloud_remove_nan);
+	// pcl::PointCloud<PointT>::Ptr cloud_downsampled(new pcl::PointCloud<PointT>);
+	// pcl::VoxelGrid<PointT> downsampled;
+	// downsampled.setInputCloud(cloud_remove_nan);
+	// downsampled.setLeafSize(0.01, 0.01, 0.01);
+	// downsampled.filter(*cloud_downsampled);
+	// cout << "cloud size after downsampled: " << cloud_downsampled->size() << endl << endl;
 
-	// // [4] calculate normal
-	// cout << "calculate normal..." << endl;
-	// clock_t normal_start = clock();
-	// pcl::NormalEstimation<PointT, NormalT> ne;
-	// ne.setInputCloud(cloud_downsampled);
-	// pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>());
-	// ne.setSearchMethod(tree);
-	// pcl::PointCloud<NormalT>::Ptr cloud_normals(new pcl::PointCloud<NormalT>);
-	// pcl::PointCloud<PointT>::Ptr normals2cloud(new pcl::PointCloud<PointT>);
-	// ne.setRadiusSearch(0.25);
-	// ne.compute(*cloud_normals);
-	// cout << "time to calculate normal： " << (double)(clock() - normal_start)/CLOCKS_PER_SEC << "s" << endl << endl;
-	// pcl::io::savePCDFile("../../data/cloud_downsampled.pcd", *cloud_downsampled, true);
-	// pcl::io::savePCDFile("../../data/cloud_normals.pcd", *cloud_normals, true);
-
-
-	pcl::PointCloud<PointT>::Ptr cloud_downsampled(new pcl::PointCloud<PointT>);
-	pcl::io::loadPCDFile<PointT>("../../data/cloud_downsampled.pcd", *cloud_downsampled);
+	// [4] calculate normal
+	cout << "calculate normal..." << endl;
+	clock_t normal_start = clock();
 	pcl::PointCloud<NormalT>::Ptr cloud_normals(new pcl::PointCloud<NormalT>);
-	pcl::io::loadPCDFile<NormalT>("../../data/cloud_normals.pcd", *cloud_normals);
-	
+	pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>());
+
+	pcl::NormalEstimationOMP<PointT, NormalT> ne;
+	ne.setNumberOfThreads(2);
+
+	// pcl::NormalEstimation<PointT, NormalT> ne;
+	ne.setInputCloud(cloud_downsampled);
+	ne.setSearchMethod(tree);
+	ne.setRadiusSearch(0.25);
+	ne.compute(*cloud_normals);
+	cout << "time to calculate normal： " << (double)(clock() - normal_start)/CLOCKS_PER_SEC << "s" << endl << endl;
 
 	// [5] get horizontal point
 	cout << "get trunk subface..." << endl;

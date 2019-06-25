@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl
+CMAKE_SOURCE_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build
+CMAKE_BINARY_DIR = /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named vh_detect_holder
+# Target rules for targets named vh_detect_revolute
 
 # Build rule for target.
-vh_detect_holder: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_holder
-.PHONY : vh_detect_holder
+vh_detect_revolute: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_revolute
+.PHONY : vh_detect_revolute
 
 # fast build rule for target.
-vh_detect_holder/fast:
-	$(MAKE) -f CMakeFiles/vh_detect_holder.dir/build.make CMakeFiles/vh_detect_holder.dir/build
-.PHONY : vh_detect_holder/fast
+vh_detect_revolute/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/build
+.PHONY : vh_detect_revolute/fast
 
 #=============================================================================
 # Target rules for targets named vh_detect_rail
@@ -135,6 +135,32 @@ vh_detect_rail: cmake_check_build_system
 vh_detect_rail/fast:
 	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/build
 .PHONY : vh_detect_rail/fast
+
+#=============================================================================
+# Target rules for targets named vh_detect_holder
+
+# Build rule for target.
+vh_detect_holder: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_holder
+.PHONY : vh_detect_holder
+
+# fast build rule for target.
+vh_detect_holder/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_holder.dir/build.make CMakeFiles/vh_detect_holder.dir/build
+.PHONY : vh_detect_holder/fast
+
+#=============================================================================
+# Target rules for targets named vh_detect_holder_reprocess
+
+# Build rule for target.
+vh_detect_holder_reprocess: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_holder_reprocess
+.PHONY : vh_detect_holder_reprocess
+
+# fast build rule for target.
+vh_detect_holder_reprocess/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/build
+.PHONY : vh_detect_holder_reprocess/fast
 
 vh_detect_holder.o: vh_detect_holder.cpp.o
 
@@ -163,6 +189,33 @@ vh_detect_holder.cpp.s:
 	$(MAKE) -f CMakeFiles/vh_detect_holder.dir/build.make CMakeFiles/vh_detect_holder.dir/vh_detect_holder.cpp.s
 .PHONY : vh_detect_holder.cpp.s
 
+vh_detect_holder_reprocess.o: vh_detect_holder_reprocess.cpp.o
+
+.PHONY : vh_detect_holder_reprocess.o
+
+# target to build an object file
+vh_detect_holder_reprocess.cpp.o:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/vh_detect_holder_reprocess.cpp.o
+.PHONY : vh_detect_holder_reprocess.cpp.o
+
+vh_detect_holder_reprocess.i: vh_detect_holder_reprocess.cpp.i
+
+.PHONY : vh_detect_holder_reprocess.i
+
+# target to preprocess a source file
+vh_detect_holder_reprocess.cpp.i:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/vh_detect_holder_reprocess.cpp.i
+.PHONY : vh_detect_holder_reprocess.cpp.i
+
+vh_detect_holder_reprocess.s: vh_detect_holder_reprocess.cpp.s
+
+.PHONY : vh_detect_holder_reprocess.s
+
+# target to generate assembly for a file
+vh_detect_holder_reprocess.cpp.s:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/vh_detect_holder_reprocess.cpp.s
+.PHONY : vh_detect_holder_reprocess.cpp.s
+
 vh_detect_rail.o: vh_detect_rail.cpp.o
 
 .PHONY : vh_detect_rail.o
@@ -190,6 +243,33 @@ vh_detect_rail.cpp.s:
 	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/vh_detect_rail.cpp.s
 .PHONY : vh_detect_rail.cpp.s
 
+vh_detect_revolute.o: vh_detect_revolute.cpp.o
+
+.PHONY : vh_detect_revolute.o
+
+# target to build an object file
+vh_detect_revolute.cpp.o:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/vh_detect_revolute.cpp.o
+.PHONY : vh_detect_revolute.cpp.o
+
+vh_detect_revolute.i: vh_detect_revolute.cpp.i
+
+.PHONY : vh_detect_revolute.i
+
+# target to preprocess a source file
+vh_detect_revolute.cpp.i:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/vh_detect_revolute.cpp.i
+.PHONY : vh_detect_revolute.cpp.i
+
+vh_detect_revolute.s: vh_detect_revolute.cpp.s
+
+.PHONY : vh_detect_revolute.s
+
+# target to generate assembly for a file
+vh_detect_revolute.cpp.s:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/vh_detect_revolute.cpp.s
+.PHONY : vh_detect_revolute.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -198,14 +278,22 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... vh_detect_holder"
+	@echo "... vh_detect_revolute"
 	@echo "... vh_detect_rail"
+	@echo "... vh_detect_holder"
+	@echo "... vh_detect_holder_reprocess"
 	@echo "... vh_detect_holder.o"
 	@echo "... vh_detect_holder.i"
 	@echo "... vh_detect_holder.s"
+	@echo "... vh_detect_holder_reprocess.o"
+	@echo "... vh_detect_holder_reprocess.i"
+	@echo "... vh_detect_holder_reprocess.s"
 	@echo "... vh_detect_rail.o"
 	@echo "... vh_detect_rail.i"
 	@echo "... vh_detect_rail.s"
+	@echo "... vh_detect_revolute.o"
+	@echo "... vh_detect_revolute.i"
+	@echo "... vh_detect_revolute.s"
 .PHONY : help
 
 

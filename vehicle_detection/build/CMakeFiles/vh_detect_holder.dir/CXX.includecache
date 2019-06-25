@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/demo_pcl/vh_detect_holder.cpp
+/home/zlk/Documents/ros/vehicle_detection/src/vehicle_detection/vehicle_detection/vh_detect_holder.cpp
 iostream
 -
 ctime
@@ -24,6 +24,8 @@ pcl/point_cloud.h
 pcl/point_types.h
 -
 pcl/features/normal_3d.h
+-
+pcl/features/normal_3d_omp.h
 -
 pcl/visualization/pcl_visualizer.h
 -
@@ -1534,12 +1536,22 @@ pcl/search/pcl_search.h
 pcl/features/normal_3d.h
 -
 
+/usr/include/pcl-1.8/pcl/features/impl/normal_3d_omp.hpp
+pcl/features/normal_3d_omp.h
+-
+
 /usr/include/pcl-1.8/pcl/features/normal_3d.h
 pcl/features/feature.h
 -
 pcl/common/centroid.h
 -
 pcl/features/impl/normal_3d.hpp
+-
+
+/usr/include/pcl-1.8/pcl/features/normal_3d_omp.h
+pcl/features/normal_3d.h
+-
+pcl/features/impl/normal_3d_omp.hpp
 -
 
 /usr/include/pcl-1.8/pcl/filters/boost.h

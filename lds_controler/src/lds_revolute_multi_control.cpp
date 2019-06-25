@@ -7,81 +7,63 @@
 #include <sensor_msgs/JointState.h>
 
 double joint_position;
+std_msgs::Float64 require_lds_position;
+std_msgs::Bool lds_ready;
 
 void ldsPositionCallback(const sensor_msgs::JointState::ConstPtr& joint_states) {
 	joint_position = joint_states->position[0];
 }
+
+// void ldsPosRequireCallback(const std_msgs::Float64::ConstPtr&& lds_position) {
+//   lds_ready.data = false;
+// 	require_lds_position.data = lds_position->data;
+// }
 
 int main(int argc, char **argv) {
   if ( argc != 2) {
     std::cout << "no enough parameter" << std::endl;
     return -1;
   }
-  double speed = atof(argv[1]);
-  std::cout << "speed " << speed << std::endl;
+  double require_pos = atof(argv[1]);
+  std::cout << "require lds position " << require_pos << std::endl;
 
-  ros::init(argc, argv, "lds_revolute");
-  ros::NodeHandle lds_revolute;
-  ros::Publisher lds_position_pub = lds_revolute.advertise<std_msgs::Float64>(
-          "/lds_revolute/lds_revolute_position_controller/command", 1);
-  ros::Publisher lds_ready_pub = lds_revolute.advertise<std_msgs::Bool>(
-          "/lds/ready", 1);
-  ros::Publisher lds_stop_pub = lds_revolute.advertise<std_msgs::Bool>(
-          "/lds/stop", 1);
+  ros::init(argc, argv, "lds_revolute_multi");
+  ros::NodeHandle lds_revolute_multi;
 
-  ros::Subscriber lds_joint_state = lds_revolute.subscribe<sensor_msgs::JointState>(
+  ros::Subscriber lds_pos = lds_revolute_multi.subscribe<sensor_msgs::JointState>(
           "/lds_revolute/joint_states", 1, ldsPositionCallback);
 
-  int i = 0, t = 0;
-  const double lds_angle_start = 0.0;
-  std_msgs::Float64 msg;
+  // ros::Subscriber lds_require_pos = lds_revolute_multi.subscribe<std_msgs::Float64>(
+  //         "/lds_pos", 1, ldsPosRequireCallback);
+
+  lds_ready.data = false;
+  ros::Publisher lds_ready_pub = lds_revolute_multi.advertise<std_msgs::Bool>( "/lds/ready", 1 );
+
+  require_lds_position.data = require_pos;
+  ros::Publisher lds_position_pub = lds_revolute_multi.advertise<std_msgs::Float64>(
+          "/lds_revolute/lds_revolute_position_controller/command", 1);
+
+  int i = 0;
   ros::Rate loop_rate(10);
 
-  while (ros::ok() && (joint_position - lds_angle_start > 1e-4 || joint_position - lds_angle_start < -1e-4 || i < 3)) {
-    msg.data = lds_angle_start;
-    lds_position_pub.publish(msg);
-    std::cout << "before, joint position " << joint_position << "    data " << msg.data << std::endl;
+  while (true) {
+    lds_position_pub.publish(require_lds_position);
+    std::cout << "require  " << require_pos << ",  at position  " << joint_position << std::endl;
 
-    ros::spinOnce();
-    loop_rate.sleep();
-    ++i;
-  }
-  
-  std_msgs::Bool lds_ready;
-  lds_ready.data = true;
-  lds_ready_pub.publish(lds_ready);
-  std::cout << "at the start" << std::endl;
-  
-  while (ros::ok()) {
-    if (joint_position > 3.14) {
+    if ( joint_position - require_pos > -0.01 && joint_position - require_pos < 0.01 && i>13 ) {
+      lds_ready.data = true;
+      lds_ready_pub.publish(lds_ready);
       break;
     }
-    // msg.data = 0.017453278 * t;
-    msg.data = speed * t + lds_angle_start;    
-    lds_position_pub.publish(msg);
-    ++t;
-    std::cout << "joint position " << joint_position << "    data " << msg.data << std::endl;
-
+    ++i;
     ros::spinOnce();
     loop_rate.sleep();
   }
 
-  for (int i = 0; i < 10; ++i) {
-    lds_position_pub.publish(msg);
-    std::cout << "joint position " << joint_position << "    data " << msg.data << std::endl;
-
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-
-  std_msgs::Bool lds_stop;
-  lds_stop.data = true;
-  for (int i = 0; i < 10; ++i) {
-    lds_stop_pub.publish(lds_stop);
-    loop_rate.sleep();
-  }
-  std::cout << "stop" << std::endl;
-  
   return 0;
 }
+
+
+
+
 
