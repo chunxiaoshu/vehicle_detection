@@ -31,30 +31,30 @@ typedef pcl::PointXYZ PointT;
 typedef pcl::Normal NormalT;
 
 float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_lane) {
-	const int high_lengh = 3000;
-	const int height_step = 500;
-	int height_cnt = 0;
-	int height_max = 0;
+	const size_t high_lengh = 3000;
+	const size_t height_step = 500;
+	size_t height_cnt = 0;
+	size_t height_max = 0;
 	float height_ava = 0;
 	float plane_high[high_lengh] = {0};
-	int plane_high_idx[high_lengh] = {0};
-	int plane_high_distribute[height_step] = {0};
-	for (int i = 0; i < cloud_plane->size(); ++i) {
-		int tmp = static_cast<int>((cloud_plane->points[i].x + 13) * 100);
+	size_t plane_high_idx[high_lengh] = {0};
+	size_t plane_high_distribute[height_step] = {0};
+	for (size_t i = 0; i < cloud_plane->size(); ++i) {
+		size_t tmp = static_cast<int>((cloud_plane->points[i].x + 13) * 100);
 		if (plane_high[tmp] < cloud_plane->points[i].z) {
 			plane_high[tmp] = cloud_plane->points[i].z;
 			plane_high_idx[tmp] = i;
 		}
 	}
 
-	for (int i = 0; i < high_lengh; ++i) {
+	for (size_t i = 0; i < high_lengh; ++i) {
 		if (plane_high[i] > 1.0 && plane_high[i] <= height_step) {
-			int tmp = static_cast<int>(plane_high[i] * 100);
+			size_t tmp = static_cast<int>(plane_high[i] * 100);
 			++plane_high_distribute[tmp];
 		}
 	}
 
-	for (int i = 1; i < height_step; ++i) {
+	for (size_t i = 1; i < height_step; ++i) {
 		if (height_cnt < plane_high_distribute[i]) {
 			height_cnt = plane_high_distribute[i];
 			height_max = i;
@@ -62,7 +62,7 @@ float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<Poin
 	}
 	float height_tmp = static_cast<float>(height_max) / 100;
 
-	for (int i = 0; i < cloud_plane->size(); ++i) {
+	for (size_t i = 0; i < cloud_plane->size(); ++i) {
 		if (abs(cloud_plane->points[i].z - height_tmp) < 0.04) {
 			cloud_lane->push_back(cloud_plane->points[i]);
 			height_ava += cloud_plane->points[i].z;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 	// [5] get horizontal point
 	cout << "get trunk subface..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_horizontal(new pcl::PointCloud<PointT>);
-	for (int i = 0; i < cloud_normals->size(); i++) {
+	for (size_t i = 0; i < cloud_normals->size(); i++) {
 		if (cloud_downsampled->points[i].z <= 2 && 
 			(cloud_normals->points[i].normal_z >= 0.9 || cloud_normals->points[i].normal_z <= -0.9) ) {
 			cloud_horizontal->push_back(cloud_downsampled->points[i]);
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 	pcl::PointCloud<PointT>::Ptr cloud_trunk_subface_after_revise(new pcl::PointCloud<PointT>());
 	pcl::transformPointCloud(*cloud_trunk_subface, *cloud_trunk_subface_after_revise, rotation_Matrix);
 	float trunk_subface_height = 0.0;
-	for (int i = 0; i < cloud_trunk_subface_after_revise->size(); ++i) {
+	for (size_t i = 0; i < cloud_trunk_subface_after_revise->size(); ++i) {
 		trunk_subface_height += cloud_trunk_subface_after_revise->points[i].z;
 	}
 	trunk_subface_height /= cloud_trunk_subface_after_revise->size();
@@ -260,8 +260,8 @@ int main(int argc, char *argv[]) {
 	pcl::PointCloud<PointT>::Ptr trunk_plane_right(new pcl::PointCloud<PointT>());
 	pcl::PointCloud<PointT>::Ptr potential_trunk_plane_left(new pcl::PointCloud<PointT>());
 	pcl::PointCloud<PointT>::Ptr trunk_plane_left(new pcl::PointCloud<PointT>());
-	int deckNormalSize = cloud_normals->size();
-	for (int i = 0; i < deckNormalSize; i++) {
+	size_t deckNormalSize = cloud_normals->size();
+	for (size_t i = 0; i < deckNormalSize; i++) {
 		if (cloud_normals->points[i].normal_x >= 0.9) potential_trunk_plane_back->push_back(cloud_downsampled_after_revise->points[i]);
 		if (cloud_normals->points[i].normal_x <= -0.9) potential_trunk_plane_front->push_back(cloud_downsampled_after_revise->points[i]);
 		if (cloud_normals->points[i].normal_y >= 0.9) potential_trunk_plane_right->push_back(cloud_downsampled_after_revise->points[i]);
@@ -287,7 +287,7 @@ int main(int argc, char *argv[]) {
 	trunkPlane_extract.setInputCloud(potential_trunk_plane_back);
 	trunkPlane_extract.setIndices(trunkPlane_inliers);
 	trunkPlane_extract.filter(*trunk_plane_back);
-	for (int i = 0; i < trunk_plane_back->size(); i++) {
+	for (size_t i = 0; i < trunk_plane_back->size(); i++) {
 		trunkPlane_Xmin += trunk_plane_back->points[i].x;
 	}
 	trunkPlane_Xmin /= trunk_plane_back->size();
@@ -305,7 +305,7 @@ int main(int argc, char *argv[]) {
 	trunkPlane_extract.setInputCloud(potential_trunk_plane_front);
 	trunkPlane_extract.setIndices(trunkPlane_inliers);
 	trunkPlane_extract.filter(*trunk_plane_front);
-	for (int i = 0; i < trunk_plane_front->size(); i++) {
+	for (size_t i = 0; i < trunk_plane_front->size(); i++) {
 		trunkPlane_Xmax += trunk_plane_front->points[i].x;
 	}
 	trunkPlane_Xmax /= trunk_plane_front->size();
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
 	trunkPlane_extract.setInputCloud(potential_trunk_plane_right);
 	trunkPlane_extract.setIndices(trunkPlane_inliers);
 	trunkPlane_extract.filter(*trunk_plane_right);
-	for (int i = 0; i < trunk_plane_right->size(); i++) {
+	for (size_t i = 0; i < trunk_plane_right->size(); i++) {
 		trunkPlane_Ymin += trunk_plane_right->points[i].y;
 	}
 	trunkPlane_Ymin /= trunk_plane_right->size();
@@ -334,7 +334,7 @@ int main(int argc, char *argv[]) {
 	trunkPlane_extract.setInputCloud(potential_trunk_plane_left);
 	trunkPlane_extract.setIndices(trunkPlane_inliers);
 	trunkPlane_extract.filter(*trunk_plane_left);
-	for (int i = 0; i < trunk_plane_left->size(); i++) {
+	for (size_t i = 0; i < trunk_plane_left->size(); i++) {
 		trunkPlane_Ymax += trunk_plane_left->points[i].y;
 	}
 	trunkPlane_Ymax /= trunk_plane_left->size();

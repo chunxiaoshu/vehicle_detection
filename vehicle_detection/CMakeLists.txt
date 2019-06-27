@@ -15,5 +15,8 @@ target_link_libraries( vh_detect_holder_reprocess ${PCL_LIBRARIES} )
 add_executable( vh_detect_rail vh_detect_rail.cpp )
 target_link_libraries( vh_detect_rail ${PCL_LIBRARIES} )
 
+add_executable( vh_detect_rail_slant vh_detect_rail_slant.cpp )
+target_link_libraries( vh_detect_rail_slant ${PCL_LIBRARIES} )
+
 add_executable( vh_detect_revolute vh_detect_revolute.cpp )
 target_link_libraries( vh_detect_revolute ${PCL_LIBRARIES} )

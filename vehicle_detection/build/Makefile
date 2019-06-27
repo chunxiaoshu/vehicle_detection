@@ -111,30 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named vh_detect_revolute
+# Target rules for targets named vh_detect_holder_reprocess
 
 # Build rule for target.
-vh_detect_revolute: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_revolute
-.PHONY : vh_detect_revolute
+vh_detect_holder_reprocess: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_holder_reprocess
+.PHONY : vh_detect_holder_reprocess
 
 # fast build rule for target.
-vh_detect_revolute/fast:
-	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/build
-.PHONY : vh_detect_revolute/fast
-
-#=============================================================================
-# Target rules for targets named vh_detect_rail
-
-# Build rule for target.
-vh_detect_rail: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_rail
-.PHONY : vh_detect_rail
-
-# fast build rule for target.
-vh_detect_rail/fast:
-	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/build
-.PHONY : vh_detect_rail/fast
+vh_detect_holder_reprocess/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/build
+.PHONY : vh_detect_holder_reprocess/fast
 
 #=============================================================================
 # Target rules for targets named vh_detect_holder
@@ -150,17 +137,43 @@ vh_detect_holder/fast:
 .PHONY : vh_detect_holder/fast
 
 #=============================================================================
-# Target rules for targets named vh_detect_holder_reprocess
+# Target rules for targets named vh_detect_rail_slant
 
 # Build rule for target.
-vh_detect_holder_reprocess: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_holder_reprocess
-.PHONY : vh_detect_holder_reprocess
+vh_detect_rail_slant: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_rail_slant
+.PHONY : vh_detect_rail_slant
 
 # fast build rule for target.
-vh_detect_holder_reprocess/fast:
-	$(MAKE) -f CMakeFiles/vh_detect_holder_reprocess.dir/build.make CMakeFiles/vh_detect_holder_reprocess.dir/build
-.PHONY : vh_detect_holder_reprocess/fast
+vh_detect_rail_slant/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_rail_slant.dir/build.make CMakeFiles/vh_detect_rail_slant.dir/build
+.PHONY : vh_detect_rail_slant/fast
+
+#=============================================================================
+# Target rules for targets named vh_detect_rail
+
+# Build rule for target.
+vh_detect_rail: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_rail
+.PHONY : vh_detect_rail
+
+# fast build rule for target.
+vh_detect_rail/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/build
+.PHONY : vh_detect_rail/fast
+
+#=============================================================================
+# Target rules for targets named vh_detect_revolute
+
+# Build rule for target.
+vh_detect_revolute: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 vh_detect_revolute
+.PHONY : vh_detect_revolute
+
+# fast build rule for target.
+vh_detect_revolute/fast:
+	$(MAKE) -f CMakeFiles/vh_detect_revolute.dir/build.make CMakeFiles/vh_detect_revolute.dir/build
+.PHONY : vh_detect_revolute/fast
 
 vh_detect_holder.o: vh_detect_holder.cpp.o
 
@@ -243,6 +256,33 @@ vh_detect_rail.cpp.s:
 	$(MAKE) -f CMakeFiles/vh_detect_rail.dir/build.make CMakeFiles/vh_detect_rail.dir/vh_detect_rail.cpp.s
 .PHONY : vh_detect_rail.cpp.s
 
+vh_detect_rail_slant.o: vh_detect_rail_slant.cpp.o
+
+.PHONY : vh_detect_rail_slant.o
+
+# target to build an object file
+vh_detect_rail_slant.cpp.o:
+	$(MAKE) -f CMakeFiles/vh_detect_rail_slant.dir/build.make CMakeFiles/vh_detect_rail_slant.dir/vh_detect_rail_slant.cpp.o
+.PHONY : vh_detect_rail_slant.cpp.o
+
+vh_detect_rail_slant.i: vh_detect_rail_slant.cpp.i
+
+.PHONY : vh_detect_rail_slant.i
+
+# target to preprocess a source file
+vh_detect_rail_slant.cpp.i:
+	$(MAKE) -f CMakeFiles/vh_detect_rail_slant.dir/build.make CMakeFiles/vh_detect_rail_slant.dir/vh_detect_rail_slant.cpp.i
+.PHONY : vh_detect_rail_slant.cpp.i
+
+vh_detect_rail_slant.s: vh_detect_rail_slant.cpp.s
+
+.PHONY : vh_detect_rail_slant.s
+
+# target to generate assembly for a file
+vh_detect_rail_slant.cpp.s:
+	$(MAKE) -f CMakeFiles/vh_detect_rail_slant.dir/build.make CMakeFiles/vh_detect_rail_slant.dir/vh_detect_rail_slant.cpp.s
+.PHONY : vh_detect_rail_slant.cpp.s
+
 vh_detect_revolute.o: vh_detect_revolute.cpp.o
 
 .PHONY : vh_detect_revolute.o
@@ -277,11 +317,12 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... edit_cache"
-	@echo "... vh_detect_revolute"
-	@echo "... vh_detect_rail"
-	@echo "... vh_detect_holder"
 	@echo "... vh_detect_holder_reprocess"
+	@echo "... vh_detect_holder"
+	@echo "... vh_detect_rail_slant"
+	@echo "... edit_cache"
+	@echo "... vh_detect_rail"
+	@echo "... vh_detect_revolute"
 	@echo "... vh_detect_holder.o"
 	@echo "... vh_detect_holder.i"
 	@echo "... vh_detect_holder.s"
@@ -291,6 +332,9 @@ help:
 	@echo "... vh_detect_rail.o"
 	@echo "... vh_detect_rail.i"
 	@echo "... vh_detect_rail.s"
+	@echo "... vh_detect_rail_slant.o"
+	@echo "... vh_detect_rail_slant.i"
+	@echo "... vh_detect_rail_slant.s"
 	@echo "... vh_detect_revolute.o"
 	@echo "... vh_detect_revolute.i"
 	@echo "... vh_detect_revolute.s"

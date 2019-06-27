@@ -79,7 +79,7 @@ float get_length(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<Poin
   vector<float> half_max_x;
 	size_t plane_high_distribute[high_lengh] = {0};
 	for (size_t i = 0; i < cloud_plane->size(); ++i) {
-		size_t tmp = static_cast<size_t>((cloud_plane->points[i].x + 13) * 100);
+		size_t tmp = static_cast<int>((cloud_plane->points[i].x + 13) * 100);
 		++plane_high_distribute[tmp];
 	}
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
 	// [1] load pcd data
 	cout << "loading pcd data..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
-	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail.pcd", *cloud_origin)) {
+	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail_slant.pcd", *cloud_origin)) {
 		cout << "loading pcd data failed" << endl << endl;
 		return -1;
 	}
@@ -260,63 +260,37 @@ int main(int argc, char *argv[]) {
 
 	float trunkPlane_Ymin = 0.0, trunkPlane_Ymax = 0.0;
 
-  pcl::ModelCoefficients::Ptr plane_coefficients_trunk_left(new pcl::ModelCoefficients);
-	pcl::PointIndices::Ptr inliers_left(new pcl::PointIndices);
+	pcl::PointIndices::Ptr trunkPlane_inliers(new pcl::PointIndices);
+	pcl::ModelCoefficients::Ptr trunkPlane_coefficients(new pcl::ModelCoefficients);
 
-	pcl::SACSegmentation<PointT> plane_trunk_left;
-	plane_trunk_left.setOptimizeCoefficients(true);
-	plane_trunk_left.setModelType(pcl::SACMODEL_PLANE);
-	plane_trunk_left.setMethodType(pcl::SAC_RANSAC);
-	plane_trunk_left.setDistanceThreshold(0.01);
-  plane_trunk_left.setInputCloud(potential_trunk_plane_left);
-	plane_trunk_left.segment(*inliers_left, *plane_coefficients_trunk_left);
+	pcl::SACSegmentation<PointT> trunk_plane_seg;
+	trunk_plane_seg.setOptimizeCoefficients(true);
+	trunk_plane_seg.setModelType(pcl::SACMODEL_PLANE);
+	trunk_plane_seg.setMethodType(pcl::SAC_RANSAC);
+	trunk_plane_seg.setDistanceThreshold(0.01);
 
-	pcl::ExtractIndices<PointT> extract_trunk_left;
-	extract_trunk_left.setNegative(false);
-	extract_trunk_left.setInputCloud(potential_trunk_plane_left);
-	extract_trunk_left.setIndices(inliers_left);
-	extract_trunk_left.filter(*trunk_plane_left);
+	pcl::ExtractIndices<PointT> trunkPlane_extract;
+	trunkPlane_extract.setNegative(false);
 
-	for (size_t i = 0; i < trunk_plane_left->size(); i++) {
-		trunkPlane_Ymax += trunk_plane_left->points[i].y;
-	}
-	trunkPlane_Ymax /= trunk_plane_left->size();
-#ifdef SHOW_PLANE_COEFF
-	cout << "coefficients of trunk left plane " << endl;
-	for (size_t i = 0; i < plane_coefficients_trunk_left->values.size(); ++i) {
-		cout << "	" << coeff_plane[i] << ":";
-		cout << "	" << plane_coefficients_trunk_left->values[i] << endl;
-	}
-#endif
-
-	pcl::ModelCoefficients::Ptr plane_coefficients_trunk_right(new pcl::ModelCoefficients);
-	pcl::PointIndices::Ptr inliers_right(new pcl::PointIndices);
-
-	pcl::SACSegmentation<PointT> plane_trunk_right;
-	plane_trunk_right.setOptimizeCoefficients(true);
-	plane_trunk_right.setModelType(pcl::SACMODEL_PLANE);
-	plane_trunk_right.setMethodType(pcl::SAC_RANSAC);
-	plane_trunk_right.setDistanceThreshold(0.01);
-  plane_trunk_right.setInputCloud(potential_trunk_plane_right);
-	plane_trunk_right.segment(*inliers_right, *plane_coefficients_trunk_right);
-
-	pcl::ExtractIndices<PointT> extract_trunk_right;
-	extract_trunk_right.setNegative(false);
-	extract_trunk_right.setInputCloud(potential_trunk_plane_right);
-	extract_trunk_right.setIndices(inliers_right);
-	extract_trunk_right.filter(*trunk_plane_right);
-
+	trunk_plane_seg.setInputCloud(potential_trunk_plane_right);
+	trunk_plane_seg.segment(*trunkPlane_inliers, *trunkPlane_coefficients);
+	trunkPlane_extract.setInputCloud(potential_trunk_plane_right);
+	trunkPlane_extract.setIndices(trunkPlane_inliers);
+	trunkPlane_extract.filter(*trunk_plane_right);
 	for (size_t i = 0; i < trunk_plane_right->size(); i++) {
 		trunkPlane_Ymin += trunk_plane_right->points[i].y;
 	}
 	trunkPlane_Ymin /= trunk_plane_right->size();
-#ifdef SHOW_PLANE_COEFF
-	cout << "coefficients of trunk head plane " << endl;
-	for (size_t i = 0; i < plane_coefficients_trunk_right->values.size(); ++i) {
-		cout << "	" << coeff_plane[i] << ":";
-		cout << "	" << plane_coefficients_trunk_right->values[i] << endl;
+
+	trunk_plane_seg.setInputCloud(potential_trunk_plane_left);
+	trunk_plane_seg.segment(*trunkPlane_inliers, *trunkPlane_coefficients);
+	trunkPlane_extract.setInputCloud(potential_trunk_plane_left);
+	trunkPlane_extract.setIndices(trunkPlane_inliers);
+	trunkPlane_extract.filter(*trunk_plane_left);
+	for (size_t i = 0; i < trunk_plane_left->size(); i++) {
+		trunkPlane_Ymax += trunk_plane_left->points[i].y;
 	}
-#endif
+	trunkPlane_Ymax /= trunk_plane_left->size();
 
   float trunk_width = abs(trunkPlane_Ymax - trunkPlane_Ymin);
   cout << "The width of the trunk is " << trunk_width << endl;

@@ -77,19 +77,19 @@ int main(int argc, char *argv[]) {
 	pcl::PointCloud<PointT>::Ptr cloud_pos2_trunk(new pcl::PointCloud<PointT>);
 	pcl::PointCloud<PointT>::Ptr cloud_pos3_trunk(new pcl::PointCloud<PointT>);
 
-	for (int i = 0; i < cloud_pos1->size(); ++i) {
+	for (size_t i = 0; i < cloud_pos1->size(); ++i) {
 		if ( cloud_pos1->points[i].z > 0.5) {
 			cloud_pos1_trunk->push_back(cloud_pos1->points[i]);
 		}
 	}
   cout << "cloud size cloud_pos1_trunk: " << cloud_pos1_trunk->size() << endl;
-  for (int i = 0; i < cloud_pos2->size(); ++i) {
+  for (size_t i = 0; i < cloud_pos2->size(); ++i) {
 		if ( cloud_pos2->points[i].z > 0.5) {
 			cloud_pos2_trunk->push_back(cloud_pos2->points[i]);
 		}
 	}
   cout << "cloud size cloud_pos2_trunk: " << cloud_pos2_trunk->size() << endl;
-  for (int i = 0; i < cloud_pos3->size(); ++i) {
+  for (size_t i = 0; i < cloud_pos3->size(); ++i) {
 		if ( cloud_pos3->points[i].z > 0.5) {
 			cloud_pos3_trunk->push_back(cloud_pos3->points[i]);
 		}
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
   // [3] get the height at the left and the right
   float cloud_pos1_left_height = 0.0;
   float cloud_pos1_right_height = 0.0;
-  for (int i = 0; i < cloud_pos1_trunk->size(); ++i) {
+  for (size_t i = 0; i < cloud_pos1_trunk->size(); ++i) {
     if (cloud_pos1_trunk->points[i].y > 0 && cloud_pos1_trunk->points[i].z > cloud_pos1_left_height ) {
       cloud_pos1_left_height = cloud_pos1_trunk->points[i].z;
     }
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 
   float cloud_pos2_left_height = 0.0;
   float cloud_pos2_right_height = 0.0;
-  for (int i = 0; i < cloud_pos2_trunk->size(); ++i) {
+  for (size_t i = 0; i < cloud_pos2_trunk->size(); ++i) {
     if (cloud_pos2_trunk->points[i].y > 0 && cloud_pos2_trunk->points[i].z > cloud_pos2_left_height ) {
       cloud_pos2_left_height = cloud_pos2_trunk->points[i].z;
     }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 
     if ( coefficients_trunk_line->values[5] < 0.1 && coefficients_trunk_line->values[5] > -0.1 ) {
       cloud_line_pos1_plane_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos1_plane->push_back(cloud_line->points[i]);
       }
     }
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].y > 0 && cloud_line_pos1_left_flag ) {
       cloud_line_pos1_left_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos1_left->push_back(cloud_line->points[i]);
       }
     }
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].y < 0 && cloud_line_pos1_right_flag ) {
       cloud_line_pos1_right_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos1_right->push_back(cloud_line->points[i]);
       }
     }
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
 
     if ( coefficients_trunk_line->values[5] < 0.1 && coefficients_trunk_line->values[5] > -0.1 ) {
       cloud_line_pos2_plane_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos2_plane->push_back(cloud_line->points[i]);
       }
     }
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].y > 0 && cloud_line_pos2_left_flag ) {
       cloud_line_pos2_left_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos2_left->push_back(cloud_line->points[i]);
       }
     }
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].y < 0 && cloud_line_pos2_right_flag ) {
       cloud_line_pos2_right_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos2_right->push_back(cloud_line->points[i]);
       }
     }
@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
 
     if ( coefficients_trunk_line->values[5] < 0.1 && coefficients_trunk_line->values[5] > -0.1 ) {
       cloud_line_pos3_plane_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos3_plane->push_back(cloud_line->points[i]);
       }
     }
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].x > 0 && cloud_line_pos3_front_flag ) {
       cloud_line_pos3_front_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos3_front->push_back(cloud_line->points[i]);
       }
       for (size_t i = 0; i < coefficients_trunk_line->values.size(); ++i) {
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
     if ( (coefficients_trunk_line->values[5] > 0.9 || coefficients_trunk_line->values[5] < -0.9) 
         && cloud_line->points[0].x < 0 && cloud_line_pos3_back_flag ) {
       cloud_line_pos3_back_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos3_back->push_back(cloud_line->points[i]);
       }
       for (size_t i = 0; i < coefficients_trunk_line->values.size(); ++i) {
@@ -295,7 +295,7 @@ int main(int argc, char *argv[]) {
     if ( coefficients_trunk_line->values[5] < 0.1 && coefficients_trunk_line->values[5] > -0.1 
         && coefficients_trunk_line->values[2] > height_temp && cloud_line_pos3_head_flag ) {
       cloud_line_pos3_head_flag = false;
-      for (int i = 0; i < cloud_line->size(); ++i) {
+      for (size_t i = 0; i < cloud_line->size(); ++i) {
         cloud_line_pos3_head->push_back(cloud_line->points[i]);
       }
     }
@@ -311,13 +311,13 @@ int main(int argc, char *argv[]) {
   pcl::PointIndices::Ptr inliers_plane(new pcl::PointIndices);
 	pcl::ModelCoefficients::Ptr plane_coefficients_trunk_subface(new pcl::ModelCoefficients);
 
-  for (int i = 0; i < cloud_line_pos1_plane->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos1_plane->size(); ++i) {
     cloud_plane_subface->push_back(cloud_line_pos1_plane->points[i]);
   }
-  for (int i = 0; i < cloud_line_pos2_plane->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos2_plane->size(); ++i) {
     cloud_plane_subface->push_back(cloud_line_pos2_plane->points[i]);
   }
-  for (int i = 0; i < cloud_line_pos3_plane->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos3_plane->size(); ++i) {
     cloud_plane_subface->push_back(cloud_line_pos3_plane->points[i]);
   }
 
@@ -346,14 +346,14 @@ int main(int argc, char *argv[]) {
 
 	// [6] get trunk subface and head height
 	float trunk_subface_height = 0.0;
-	for (int i = 0; i < cloud_plane_subface_extract->size(); ++i) {
+	for (size_t i = 0; i < cloud_plane_subface_extract->size(); ++i) {
 		trunk_subface_height += cloud_plane_subface_extract->points[i].z;
 	}
 	trunk_subface_height /= cloud_plane_subface_extract->size();
 	cout << "The height of the trunk subface is " << trunk_subface_height << endl;
 
   float trunk_head_height = 0.0;
-	for (int i = 0; i < cloud_line_pos3_head->size(); ++i) {
+	for (size_t i = 0; i < cloud_line_pos3_head->size(); ++i) {
 		trunk_head_height += cloud_line_pos3_head->points[i].z;
 	}
 	trunk_head_height /= cloud_line_pos3_head->size();
@@ -362,10 +362,10 @@ int main(int argc, char *argv[]) {
 
   // [7] rebuild trunk left and right plane
   pcl::PointCloud<PointT>::Ptr cloud_plane_left(new pcl::PointCloud<PointT>());
-  for (int i = 0; i < cloud_line_pos1_left->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos1_left->size(); ++i) {
     cloud_plane_left->push_back(cloud_line_pos1_left->points[i]);
   }
-  for (int i = 0; i < cloud_line_pos2_left->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos2_left->size(); ++i) {
     cloud_plane_left->push_back(cloud_line_pos2_left->points[i]);
   }
 
@@ -391,10 +391,10 @@ int main(int argc, char *argv[]) {
 	// }
 
   pcl::PointCloud<PointT>::Ptr cloud_plane_right(new pcl::PointCloud<PointT>());
-  for (int i = 0; i < cloud_line_pos1_right->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos1_right->size(); ++i) {
     cloud_plane_right->push_back(cloud_line_pos1_right->points[i]);
   }
-  for (int i = 0; i < cloud_line_pos2_right->size(); ++i) {
+  for (size_t i = 0; i < cloud_line_pos2_right->size(); ++i) {
     cloud_plane_right->push_back(cloud_line_pos2_right->points[i]);
   }
 
@@ -422,8 +422,8 @@ int main(int argc, char *argv[]) {
   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_left_correction(new pcl::ModelCoefficients);
   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_right_correction(new pcl::ModelCoefficients);
 
-  int num_left = cloud_plane_left->size();
-  int num_right = cloud_plane_right->size();
+  size_t num_left = cloud_plane_left->size();
+  size_t num_right = cloud_plane_right->size();
   float sum_lx = 0.0;
   float sum_ly = 0.0;
   float sum_lxx = 0.0;
@@ -433,13 +433,13 @@ int main(int argc, char *argv[]) {
   float sum_rxx = 0.0;
   float sum_rxy = 0.0;
 
-  for (int i = 0; i < num_left; ++i) {
+  for (size_t i = 0; i < num_left; ++i) {
     sum_lx += cloud_plane_left->points[i].x;
     sum_ly += cloud_plane_left->points[i].y;
     sum_lxx += cloud_plane_left->points[i].x * cloud_plane_left->points[i].x;
     sum_lxy += cloud_plane_left->points[i].x * cloud_plane_left->points[i].y;
   }
-  for (int i = 0; i < num_right; ++i) {
+  for (size_t i = 0; i < num_right; ++i) {
     sum_rx += cloud_plane_right->points[i].x;
     sum_ry += cloud_plane_right->points[i].y;
     sum_rxx += cloud_plane_right->points[i].x * cloud_plane_right->points[i].x;
@@ -497,15 +497,15 @@ int main(int argc, char *argv[]) {
   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_front_correction(new pcl::ModelCoefficients);
   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_back_correction(new pcl::ModelCoefficients);
 
-  int num_front = cloud_line_pos3_front->size();
-  int num_back = cloud_line_pos3_back->size();
+  size_t num_front = cloud_line_pos3_front->size();
+  size_t num_back = cloud_line_pos3_back->size();
   float sum_faxbt = 0.0;
   float sum_baxbt = 0.0;
 
-  for (int i = 0; i < num_front; ++i) {
+  for (size_t i = 0; i < num_front; ++i) {
     sum_faxbt += cloud_line_pos3_front->points[i].x * (-B) + cloud_line_pos3_front->points[i].y * A;
   }
-  for (int i = 0; i < num_back; ++i) {
+  for (size_t i = 0; i < num_back; ++i) {
     sum_baxbt += cloud_line_pos3_back->points[i].x * (-B) + cloud_line_pos3_back->points[i].y * A;
   }
   sum_faxbt /= num_front;
