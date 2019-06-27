@@ -293,6 +293,12 @@ int main(int argc, char *argv[]) {
 	trunkPlane_Xmin /= trunk_plane_back->size();
 	cout << "货车后侧面x位置为" << trunkPlane_Xmin << endl << endl;
 	// pcl::io::savePCDFile("../../data/cloud_back.pcd", *trunk_plane_right, false);
+	cout << "coefficients of sss plane " << endl;
+	char coeff_sss[4] = { 'a', 'b', 'c', 'd' };
+	for (size_t i = 0; i < trunkPlane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_sss[i] << ":";
+		cout << "	" << trunkPlane_coefficients->values[i] << endl;
+	}
 
 	trunk_plane_seg.setInputCloud(potential_trunk_plane_front);
 	trunk_plane_seg.segment(*trunkPlane_inliers, *trunkPlane_coefficients);
@@ -305,6 +311,11 @@ int main(int argc, char *argv[]) {
 	trunkPlane_Xmax /= trunk_plane_front->size();
 	cout << "货车前侧面x位置为" << trunkPlane_Xmax << endl << endl;
 	// pcl::io::savePCDFile("../../data/cloud_front.pcd", *trunk_plane_right, false);
+	cout << "coefficients of ssss plane " << endl;
+	for (size_t i = 0; i < trunkPlane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_sss[i] << ":";
+		cout << "	" << trunkPlane_coefficients->values[i] << endl;
+	}
 
 	trunk_plane_seg.setInputCloud(potential_trunk_plane_right);
 	trunk_plane_seg.segment(*trunkPlane_inliers, *trunkPlane_coefficients);
