@@ -3,9 +3,10 @@
   <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
-  <arg name="gui" default="true"/>
+  <arg name="gui" default="false"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
+  <arg name="rviz" default="false"/>
 
   <!-- start with a empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
@@ -40,6 +41,6 @@
 
   <!-- start rviz node -->
   <arg name="rvizconfig" default="$(find scan_gazebo_simu)/rviz/lds.rviz" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" if="$(arg rviz)"/>
 
 </launch>

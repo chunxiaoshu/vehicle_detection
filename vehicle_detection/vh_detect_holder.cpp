@@ -24,9 +24,9 @@
 #include <pcl/common/transforms.h>
 #include <Eigen/src/Core/Array.h>
 
-using namespace std;
-
+#define SHOW_PLANE_COEFF
 #define PI 3.14159265
+using namespace std;
 
 typedef pcl::PointXYZ PointT;
 typedef pcl::Normal NormalT;
@@ -82,49 +82,30 @@ int main(int argc, char *argv[]) {
 	// [1] load pcd data
 	cout << "loading pcd data..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
-	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail_slant.pcd", *cloud_origin)) {	
-	// if (pcl::io::loadPCDFile<PointT>(argv[1], *cloud_origin)) {
-		cout << "loading pcd data failed" << endl << endl;
+	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd80.pcd", *cloud_origin)) {	
+		cout << "loading pcd data failed" << endl;
 		return -1;
 	}
 	else {
-		cout << "loading pcd data success" << endl << endl;
+		cout << "loading pcd data success" << endl;
 		cout << "cloud size origin: " << cloud_origin->size() << endl;
 	}
 
-	// [2] passthrough filter
-	// x passthrough filter
-	pcl::PointCloud<PointT>::Ptr cloud_after_x_filter(new pcl::PointCloud<PointT>());
-	pcl::ConditionAnd<PointT>::Ptr x_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
-	x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-		new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::GE, -9.5)));
-	x_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-		new pcl::FieldComparison<PointT>("x", pcl::ComparisonOps::LE, 1.5)));
-	pcl::ConditionalRemoval<PointT> cloud_filter_x(false);
-	cloud_filter_x.setCondition(x_passthrough_filter_cond);
-	cloud_filter_x.setInputCloud(cloud_origin);
-	cloud_filter_x.setKeepOrganized(true);
-	cloud_filter_x.filter(*cloud_after_x_filter);
-	// y passthrough filter
-	pcl::PointCloud<PointT>::Ptr cloud_after_y_filter(new pcl::PointCloud<PointT>());
-	pcl::ConditionAnd<PointT>::Ptr y_passthrough_filter_cond(new pcl::ConditionAnd<PointT>());
-	y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-		new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::GE, -1.5)));
-	y_passthrough_filter_cond->addComparison(pcl::FieldComparison<PointT>::ConstPtr(
-		new pcl::FieldComparison<PointT>("y", pcl::ComparisonOps::LE, 1.5)));
-	pcl::ConditionalRemoval<PointT> cloud_filter_y(false);
-	cloud_filter_y.setCondition(y_passthrough_filter_cond);
-	cloud_filter_y.setInputCloud(cloud_after_x_filter);
-	cloud_filter_y.setKeepOrganized(true);
-	cloud_filter_y.filter(*cloud_after_y_filter);
-	// nan passthrough filter
+	// [2] remove points on the ground
 	pcl::PointCloud<PointT>::Ptr cloud_remove_nan(new pcl::PointCloud<PointT>());
 	std::vector<int> indices_Pulse;
-	pcl::removeNaNFromPointCloud(*cloud_after_y_filter, *cloud_remove_nan, indices_Pulse);
-	cout << "cloud size after passthrough filter: " << cloud_remove_nan->size() << endl << endl;
+	pcl::removeNaNFromPointCloud(*cloud_origin, *cloud_remove_nan, indices_Pulse);
+
+	pcl::PointCloud<PointT>::Ptr cloud_remove_ground(new pcl::PointCloud<PointT>);
+	for (size_t i = 0; i < cloud_remove_nan->size(); ++i) {
+		if ( cloud_remove_nan->points[i].z > 0.5) {
+			cloud_remove_ground->push_back(cloud_remove_nan->points[i]);
+		}
+	}
+  cout << "cloud size remove ground: " << cloud_remove_ground->size() << endl;
 
 	// [3] voxel grid downsample
-	pcl::PointCloud<PointT>::Ptr cloud_downsampled(cloud_remove_nan);
+	pcl::PointCloud<PointT>::Ptr cloud_downsampled(cloud_remove_ground);
 	// pcl::PointCloud<PointT>::Ptr cloud_downsampled(new pcl::PointCloud<PointT>);
 	// pcl::VoxelGrid<PointT> downsampled;
 	// downsampled.setInputCloud(cloud_remove_nan);
@@ -146,10 +127,9 @@ int main(int argc, char *argv[]) {
 	ne.setSearchMethod(tree);
 	ne.setRadiusSearch(0.25);
 	ne.compute(*cloud_normals);
-	cout << "time to calculate normal： " << (double)(clock() - normal_start)/CLOCKS_PER_SEC << "s" << endl << endl;
+	cout << "time to calculate normal: " << (double)(clock() - normal_start)/CLOCKS_PER_SEC << "s" << endl;
 
 	// [5] get horizontal point
-	cout << "get trunk subface..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_horizontal(new pcl::PointCloud<PointT>);
 	for (int i = 0; i < cloud_normals->size(); i++) {
 		if (cloud_downsampled->points[i].z <= 2 && 
@@ -159,7 +139,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	// [6] segment trunk subface point 
-	cout << "segmenting..." << endl << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_trunk_subface(new pcl::PointCloud<PointT>());
 	pcl::PointCloud<PointT>::Ptr cloud_except_trunk_subface(new pcl::PointCloud<PointT>());
 	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
@@ -178,12 +157,14 @@ int main(int argc, char *argv[]) {
 	extract_trunk_subface.setIndices(inliers);
 	extract_trunk_subface.setNegative(false);
 	extract_trunk_subface.filter(*cloud_trunk_subface);
+#ifdef SHOW_PLANE_COEFF
 	cout << "coefficients of trunk_subface plane " << endl;
-	char coeff[4] = { 'a', 'b', 'c', 'd' };
+	const char coeff_plane[4] = { 'a', 'b', 'c', 'd' };
 	for (size_t i = 0; i < plane_coefficients_trunk_subface->values.size(); ++i) {
-		cout << "	" << coeff[i] << ":";
+		cout << "	" << coeff_plane[i] << ":";
 		cout << "	" << plane_coefficients_trunk_subface->values[i] << endl;
 	}
+#endif
 
 
 	// [7] trunk subface correction 
@@ -206,13 +187,11 @@ int main(int argc, char *argv[]) {
 	rotation_axis_x /= square_sum;
 	rotation_axis_y /= square_sum;
 	rotation_axis_z /= square_sum;
-	cout << "旋转法向为：(" << rotation_axis_x << "," << rotation_axis_y << "," << rotation_axis_z << ")" << endl;
+	cout << "rotation axis: (" << rotation_axis_x << "," << rotation_axis_y << "," << rotation_axis_z << ")" << endl;
 
-	//计算需要绕旋转法向旋转的角度
 	float rotation_angle = acos(plane_coefficients_trunk_subface->values[2]);
-	cout << "与旋转法向之间的偏转角度为：" << rotation_angle / M_PI * 180 << "度" << endl;
+	cout << "rotation angel: " << rotation_angle / M_PI * 180 << "degree" << endl;
 
-	//计算旋转矩阵R
 	float x, y, z;
 	x = rotation_axis_x;
 	y = rotation_axis_y;
@@ -227,13 +206,11 @@ int main(int argc, char *argv[]) {
 	rotation_Matrix(2, 0) = (1 - cos(rotation_angle))*x*z - sin(rotation_angle)*y;
 	rotation_Matrix(2, 1) = (1 - cos(rotation_angle))*y*z + sin(rotation_angle)*x;
 	rotation_Matrix(2, 2) = cos(rotation_angle) + (1 - cos(rotation_angle))*z*z;
-	printf("旋转矩阵R为：\n");
+	printf("rotation matrix: \n");
 	printf("            | %6.3f %6.3f %6.3f | \n", rotation_Matrix(0, 0), rotation_Matrix(0, 1), rotation_Matrix(0, 2));
 	printf("        R = | %6.3f %6.3f %6.3f | \n", rotation_Matrix(1, 0), rotation_Matrix(1, 1), rotation_Matrix(1, 2));
 	printf("            | %6.3f %6.3f %6.3f | \n", rotation_Matrix(2, 0), rotation_Matrix(2, 1), rotation_Matrix(2, 2));
 	printf("\n");
-
-	//旋转原始甲板平面点云进行倾角校正
 	pcl::PointCloud<PointT>::Ptr cloud_downsampled_after_revise(new pcl::PointCloud<PointT>());
 	pcl::transformPointCloud(*cloud_downsampled, *cloud_downsampled_after_revise, rotation_Matrix);
 	
@@ -245,7 +222,7 @@ int main(int argc, char *argv[]) {
 		trunk_subface_height += cloud_trunk_subface_after_revise->points[i].z;
 	}
 	trunk_subface_height /= cloud_trunk_subface_after_revise->size();
-	cout << "货车底面高度为" << trunk_subface_height << endl << endl;
+	cout << "The height of trunk subface: " << trunk_subface_height << endl;
 
 	// [9] segment trunk side
 	pcl::PointCloud<PointT>::Ptr potential_trunk_plane_back(new pcl::PointCloud<PointT>());
@@ -287,8 +264,13 @@ int main(int argc, char *argv[]) {
 		trunkplane_Xmin += trunk_plane_back->points[i].x;
 	}
 	trunkplane_Xmin /= trunk_plane_back->size();
-	cout << "货车后侧面x位置为" << trunkplane_Xmin << endl << endl;
-	// pcl::io::savePCDFile("../../data/cloud_back.pcd", *trunk_plane_right, false);
+#ifdef SHOW_PLANE_COEFF
+	cout << "coefficients of trunk back plane " << endl;
+	for (size_t i = 0; i < trunkplane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_plane[i] << ":";
+		cout << "	" << trunkplane_coefficients->values[i] << endl;
+	}
+#endif
 
 	trunk_plane_seg.setInputCloud(potential_trunk_plane_front);
 	trunk_plane_seg.segment(*trunkplane_inliers, *trunkplane_coefficients);
@@ -299,8 +281,13 @@ int main(int argc, char *argv[]) {
 		trunkplane_Xmax += trunk_plane_front->points[i].x;
 	}
 	trunkplane_Xmax /= trunk_plane_front->size();
-	cout << "货车前侧面x位置为" << trunkplane_Xmax << endl << endl;
-	// pcl::io::savePCDFile("../../data/cloud_front.pcd", *trunk_plane_right, false);
+#ifdef SHOW_PLANE_COEFF
+	cout << "coefficients of trunk front plane " << endl;
+	for (size_t i = 0; i < trunkplane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_plane[i] << ":";
+		cout << "	" << trunkplane_coefficients->values[i] << endl;
+	}
+#endif
 
 	trunk_plane_seg.setInputCloud(potential_trunk_plane_right);
 	trunk_plane_seg.segment(*trunkplane_inliers, *trunkplane_coefficients);
@@ -311,8 +298,13 @@ int main(int argc, char *argv[]) {
 		trunkplane_Ymin += trunk_plane_right->points[i].y;
 	}
 	trunkplane_Ymin /= trunk_plane_right->size();
-	cout << "货车左侧面y位置为" << trunkplane_Ymin << endl << endl;
-	// pcl::io::savePCDFile("../../data/cloud_left.pcd", *trunk_plane_right, false);
+#ifdef SHOW_PLANE_COEFF
+	cout << "coefficients of trunk right plane " << endl;
+	for (size_t i = 0; i < trunkplane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_plane[i] << ":";
+		cout << "	" << trunkplane_coefficients->values[i] << endl;
+	}
+#endif
 
 	trunk_plane_seg.setInputCloud(potential_trunk_plane_left);
 	trunk_plane_seg.segment(*trunkplane_inliers, *trunkplane_coefficients);
@@ -323,8 +315,13 @@ int main(int argc, char *argv[]) {
 		trunkplane_Ymax += trunk_plane_left->points[i].y;
 	}
 	trunkplane_Ymax /= trunk_plane_left->size();
-	cout << "货车右侧面y位置为" << trunkplane_Ymax << endl << endl;
-	// pcl::io::savePCDFile("../../data/cloud_right.pcd", *trunk_plane_right, false);
+#ifdef SHOW_PLANE_COEFF
+	cout << "coefficients of trunk left plane " << endl;
+	for (size_t i = 0; i < trunkplane_coefficients->values.size(); ++i) {
+		cout << "	" << coeff_plane[i] << ":";
+		cout << "	" << trunkplane_coefficients->values[i] << endl;
+	}
+#endif
 
 	pcl::PointCloud<PointT>::Ptr trunk_line_back(new pcl::PointCloud<PointT>());
 	pcl::PointCloud<PointT>::Ptr trunk_line_front(new pcl::PointCloud<PointT>());
@@ -332,17 +329,17 @@ int main(int argc, char *argv[]) {
 	pcl::PointCloud<PointT>::Ptr trunk_line_left(new pcl::PointCloud<PointT>());
 
 	float left_height = get_height(trunk_plane_left, trunk_line_left);
-	cout << "货车左侧面高度为" << left_height << endl << endl;
+	cout << "The height of trunk left side height: " << left_height << endl;
 	float right_height = get_height(trunk_plane_right, trunk_line_right);
-	cout << "货车右侧面高度为" << right_height << endl << endl;
+	cout << "The height of trunk right side height: " << right_height << endl;
 
 	// [10] result
 	float trunk_length = trunkplane_Xmax - trunkplane_Xmin;
 	float trunk_width = trunkplane_Ymax - trunkplane_Ymin;
 	float trunk_height = (left_height + right_height) / 2 - trunk_subface_height; 
-	cout << "货车的长度为" << trunk_length << endl << endl;
-	cout << "货车的宽度为" << trunk_width << endl << endl;
-	cout << "货车的高度为" << trunk_height << endl << endl;
+	cout << "The length of the trunk: " << trunk_length << endl;
+	cout << "The width of the trunk: " << trunk_width << endl;
+	cout << "The height of the trunk: " << trunk_height << endl;
 
 	pcl::visualization::PCLVisualizer viewers("Cloud Viewer");
 	viewers.addCoordinateSystem();
