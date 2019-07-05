@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 	// [1] load pcd data
 	cout << "loading pcd data..." << endl;
 	pcl::PointCloud<PointT>::Ptr cloud_origin(new pcl::PointCloud<PointT>);
-	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail.pcd", *cloud_origin)) {
+	if (pcl::io::loadPCDFile<PointT>("../../pcd_data/test_pcd_rail1.pcd", *cloud_origin)) {
 		cout << "loading pcd data failed" << endl << endl;
 		return -1;
 	}
@@ -432,6 +432,25 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 	pcl::PointCloud<PointT>::Ptr cloud_trunk_subface_after_revise(new pcl::PointCloud<PointT>());
 	pcl::transformPointCloud(*cloud_trunk_subface, *cloud_trunk_subface_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr cloud_downsampled_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*cloud_downsampled, *cloud_downsampled_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr cloud_trunk_head_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*cloud_trunk_head, *cloud_trunk_head_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr trunk_plane_left_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*trunk_plane_left, *trunk_plane_left_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr trunk_plane_right_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*trunk_plane_right, *trunk_plane_right_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr trunk_line_left_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*trunk_line_left, *trunk_line_left_after_revise, rotation_Matrix);
+
+  pcl::PointCloud<PointT>::Ptr trunk_line_right_after_revise(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*trunk_line_right, *trunk_line_right_after_revise, rotation_Matrix);
+
  
   pcl::PointCloud<PointT>::Ptr cloud_line_fb(new pcl::PointCloud<PointT>());
 	float trunk_length = get_length(cloud_trunk_subface_after_revise, cloud_line_fb);
@@ -445,26 +464,26 @@ int main(int argc, char *argv[]) {
 
 	// viewers.addPointCloudNormals<pcl::PointXYZ, NormalT>(cloud_downsampled, cloud_normals);
 
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled, 255, 255, 255);
-	viewers.addPointCloud<PointT>(cloud_downsampled, oricloud_color_handlers, "original cloud");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_after_revise, 255, 255, 255);
+	viewers.addPointCloud<PointT>(cloud_downsampled_after_revise, oricloud_color_handlers, "original cloud");
 
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_subface_color_handlers(cloud_trunk_subface, 255, 0, 0);
-	viewers.addPointCloud<PointT>(cloud_trunk_subface, cloud_trunk_subface_color_handlers, "cloud trunk subface");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_subface_color_handlers(cloud_trunk_subface_after_revise, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_trunk_subface_after_revise, cloud_trunk_subface_color_handlers, "cloud trunk subface");
 
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_head_color_handlers(cloud_trunk_head, 0, 255, 0);
-	viewers.addPointCloud<PointT>(cloud_trunk_head, cloud_trunk_head_color_handlers, "cloud trunk head");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_head_color_handlers(cloud_trunk_head_after_revise, 0, 255, 0);
+	viewers.addPointCloud<PointT>(cloud_trunk_head_after_revise, cloud_trunk_head_color_handlers, "cloud trunk head");
 
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_left_color_handlers(trunk_plane_left, 0, 0, 255);
-	viewers.addPointCloud<PointT>(trunk_plane_left, trunk_plane_left_color_handlers, "cloud trunk plane left");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_left_color_handlers(trunk_plane_left_after_revise, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_plane_left_after_revise, trunk_plane_left_color_handlers, "cloud trunk plane left");
 
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_right_color_handlers(trunk_plane_right, 255, 255, 0);
-	viewers.addPointCloud<PointT>(trunk_plane_right, trunk_plane_right_color_handlers, "cloud trunk plane right");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_right_color_handlers(trunk_plane_right_after_revise, 255, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_right_after_revise, trunk_plane_right_color_handlers, "cloud trunk plane right");
 
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_left_color_handlers(trunk_line_left, 255, 255, 0);
-	viewers.addPointCloud<PointT>(trunk_line_left, trunk_line_left_color_handlers, "cloud trunk line left");
+	pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_left_color_handlers(trunk_line_left_after_revise, 255, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_line_left_after_revise, trunk_line_left_color_handlers, "cloud trunk line left");
 
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_right_color_handlers(trunk_line_right, 0, 0, 255);
-	viewers.addPointCloud<PointT>(trunk_line_right, trunk_line_right_color_handlers, "cloud trunk line right");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_right_color_handlers(trunk_line_right_after_revise, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_right_after_revise, trunk_line_right_color_handlers, "cloud trunk line right");
 
 	pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_fb_color_handlers(cloud_line_fb, 0, 255, 255);
 	viewers.addPointCloud<PointT>(cloud_line_fb, trunk_line_fb_color_handlers, "cloud line front back");

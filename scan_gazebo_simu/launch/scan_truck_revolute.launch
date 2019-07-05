@@ -7,6 +7,8 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="rviz" default="false"/>
+  <arg name="scandata" default="true"/>
+  <arg name="multi" default="true"/>
 
   <!-- start with a empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
@@ -21,7 +23,7 @@
   <!-- spawn a truck model -->
   <arg name="truck_description" value="$(find vehicle_description)/urdf/truck.urdf"/>
   <node name="truck" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-      args="-file $(arg truck_description) -urdf -model truck -x 0 -y 0 -z 0 -R 0 -P 0 -Y -1.570796"/>
+      args="-file $(arg truck_description) -urdf -model truck -x 0 -y 0 -z 0 -R 0 -P 0 -Y -1.4"/>
 
   <!-- spawn a lds models -->
   <arg name="lds_model_revolute" default="$(find get_scan_data)/urdf/lds_revolute.urdf.xacro"/>
@@ -36,11 +38,14 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
     output="screen" ns="/lds_revolute" args="lds_revolute_position_controller joint_state_controller"/>
 
-  <!-- start lds transfer node -->
-  <!-- <node name="lds_revolute_data" pkg="lds_data" type="lds_revolute_data"/> -->
-
   <!-- start rviz node -->
   <arg name="rvizconfig" default="$(find scan_gazebo_simu)/rviz/lds.rviz" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" if="$(arg rviz)"/>
+
+  <!-- start get_scan_data node -->
+  <!-- <group if="$(arg scandata)">
+    <node name="getscandata" pkg="get_scan_data" type="get_lds_data_revolute" if="$(arg multi)"/>
+    <node name="getscandata" pkg="get_scan_data" type="get_lds_data_revolute_multi" unless="$(arg multi)"/>
+  </group> -->
 
 </launch>

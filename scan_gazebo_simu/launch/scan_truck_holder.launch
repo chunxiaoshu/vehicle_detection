@@ -7,6 +7,7 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="rviz" default="false"/>
+  <arg name="scandata" default="true"/>
 
   <!-- start with a empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"> 
@@ -36,11 +37,13 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
     output="screen" ns="/lds_holder" args="lds_holder_position_controller joint_state_controller"/>
 
-  <!-- start lds transfer node -->
-  <!-- <node name="lds_holder_data" pkg="lds_data" type="lds_holder_data"/> -->
-
   <!-- start rviz node -->
   <arg name="rvizconfig" default="$(find scan_gazebo_simu)/rviz/lds.rviz" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" if="$(arg rviz)"/>
+
+  <!-- start get_scan_data node -->
+  <!-- <group if="$(arg scandata)">
+    <node name="getscandata" pkg="get_scan_data" type="get_lds_data_holder"/>
+  </group> -->
 
 </launch>

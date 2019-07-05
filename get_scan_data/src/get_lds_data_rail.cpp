@@ -92,15 +92,15 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 			int lds_count = n + save_point_min;
 			double lds_angle = angle_min + lds_count * angle_increment;
 
-			if (scan->ransick_revolute_controlges[lds_count] < range_max && scan->ranges[lds_count] > range_min) {
-				x_ = joinsick_revolute_controlt_position;
-				y_ = scansick_revolute_control->ranges[lds_count] * sin(lds_angle);
-				z_ = lds_sick_revolute_controlheight - scan->ranges[lds_count] * cos(lds_angle);
-sick_revolute_control
-				point_savsick_revolute_controle.points[point_count].x = x_;
-				point_savsick_revolute_controle.points[point_count].y = y_;
-				point_savsick_revolute_controle.points[point_count].z = z_;
-				// std::csick_revolute_controlout << "n = " << point_count << "   ldsangel = " << lds_angle
+			if (scan->ranges[lds_count] < range_max && scan->ranges[lds_count] > range_min) {
+				x_ = joint_position;
+				y_ = scan->ranges[lds_count] * sin(lds_angle);
+				z_ = lds_height - scan->ranges[lds_count] * cos(lds_angle);
+
+				point_save.points[point_count].x = x_;
+				point_save.points[point_count].y = y_;
+				point_save.points[point_count].z = z_;
+				// std::cout << "n = " << point_count << "   ldsangel = " << lds_angle
 				//  << "   xz = " << xz_ << "   y = " << y_ << "   pos = " << joint_position
 				//  << "   x = " << x_ << "   y = " << y_ << std::endl;
 			}

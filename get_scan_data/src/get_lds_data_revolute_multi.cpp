@@ -52,10 +52,14 @@ LdsToPcl::LdsToPcl() {
 }
 
 void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
+  const float pos1 = 0.0;
+  const float pos2 = 0.7853975;
+  const float pos3 = 1.570795;
+
 	const int point_num = 1081;
 	const double lds_height = 5.0;
 	double x_, y_, z_, xy_;
-  	int i = 0;
+  int i = 0;
 
 	float angle_min = scan->angle_min;
 	float angle_max = scan->angle_max;
@@ -65,7 +69,7 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 	float range_min = scan->range_min;
 	float range_max = scan->range_max;
 	
-	if ( lds_ready && i == 0) {
+	if ( lds_ready ) {
 		// std::cout << "angle_min = " << angle_min << std::endl;
 		// std::cout << "angle_max = " << angle_max << std::endl;
 		// std::cout << "angle_increment = " << angle_increment << std::endl;
@@ -107,16 +111,24 @@ void LdsToPcl::ldssubCallback(const sensor_msgs::LaserScan::ConstPtr& scan) {
 
     sensor_msgs::PointCloud2 point_save2;
 		sensor_msgs::convertPointCloudToPointCloud2(point_save, point_save2);
-
 		pcl::PCLPointCloud2 point_cloud2;
 		pcl_conversions::toPCL(point_save2, point_cloud2);
-
 		pcl::PointCloud<pcl::PointXYZ> point_cloud;
 		pcl::fromPCLPointCloud2(point_cloud2, point_cloud);
 
-		pcl::io::savePCDFileASCII("./test_pcd3.pcd",point_cloud);
-		std::cout << "Saved " << point_cloud.points.size() << " data points to test_pcd3.pcd" << std::endl;
-    i = 1;
+		if ( abs(joint_position - pos1) < 1e-2 ) {
+			pcl::io::savePCDFileASCII("./test_pcd1.pcd",point_cloud);
+			std::cout << "Saved " << point_cloud.points.size() << " data points to test_pcd1.pcd" << std::endl;
+		}
+    if ( abs(joint_position - pos2) < 1e-2 ) {
+			pcl::io::savePCDFileASCII("./test_pcd2.pcd",point_cloud);
+			std::cout << "Saved " << point_cloud.points.size() << " data points to test_pcd2.pcd" << std::endl;
+		}
+    if ( abs(joint_position - pos3) < 1e-2 ) {
+			pcl::io::savePCDFileASCII("./test_pcd3.pcd",point_cloud);
+			std::cout << "Saved " << point_cloud.points.size() << " data points to test_pcd3.pcd" << std::endl;
+		}
+
 	}
 }
 
