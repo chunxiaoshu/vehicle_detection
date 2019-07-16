@@ -20,7 +20,7 @@
   </include>
 
   <!-- spawn a truck model -->
-  <arg name="truck_description" value="$(find vehicle_description)/urdf/truck.urdf"/>
+  <arg name="truck_description" value="$(find vehicle_description)/urdf/truck_hydro.urdf"/>
   <node name="truck" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
       args="-file $(arg truck_description) -urdf -model truck -x 0 -y 2.5 -z 0 -R 0 -P 0 -Y -1.4"/>
 
