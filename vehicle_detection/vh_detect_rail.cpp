@@ -36,7 +36,7 @@ typedef pcl::PointXYZ PointT;
 typedef pcl::Normal NormalT;
 using namespace std;
 
-float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_line) {
+float get_side_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_line, float threshold) {
 	const size_t high_lengh = 3000;
 	const size_t height_step = 500;
 	size_t height_cnt = 0;
@@ -69,7 +69,49 @@ float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<Poin
 	float height_tmp = static_cast<float>(height_max) / 100;
 
 	for (size_t i = 0; i < cloud_plane->size(); ++i) {
-		if (abs(cloud_plane->points[i].z - height_tmp) < 0.04) {
+		if (abs(cloud_plane->points[i].z - height_tmp) < threshold) {
+			cloud_line->push_back(cloud_plane->points[i]);
+			height_ava += cloud_plane->points[i].z;
+		}
+	}
+
+	return height_ava / cloud_line->size() + 0.005;
+}
+
+float get_fb_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_line, float threshold) {
+	const size_t high_lengh = 3000;
+	const size_t height_step = 500;
+	size_t height_cnt = 0;
+	size_t height_max = 0;
+	float height_ava = 0;
+	float plane_high[high_lengh] = {0};
+	size_t plane_high_idx[high_lengh] = {0};
+	size_t plane_high_distribute[height_step] = {0};
+	for (size_t i = 0; i < cloud_plane->size(); ++i) {
+		size_t tmp = static_cast<int>((cloud_plane->points[i].y + 13) * 100);
+		if (plane_high[tmp] < cloud_plane->points[i].z) {
+			plane_high[tmp] = cloud_plane->points[i].z;
+			plane_high_idx[tmp] = i;
+		}
+	}
+
+	for (size_t i = 0; i < high_lengh; ++i) {
+		if (plane_high[i] > 1.0 && plane_high[i] <= height_step) {
+			size_t tmp = static_cast<int>(plane_high[i] * 100);
+			++plane_high_distribute[tmp];
+		}
+	}
+
+	for (size_t i = 1; i < height_step; ++i) {
+		if (height_cnt < plane_high_distribute[i]) {
+			height_cnt = plane_high_distribute[i];
+			height_max = i;
+		}
+	}
+	float height_tmp = static_cast<float>(height_max) / 100;
+
+	for (size_t i = 0; i < cloud_plane->size(); ++i) {
+		if (abs(cloud_plane->points[i].z - height_tmp) < threshold) {
 			cloud_line->push_back(cloud_plane->points[i]);
 			height_ava += cloud_plane->points[i].z;
 		}
@@ -112,12 +154,12 @@ float get_length(pcl::PointCloud<PointT>::Ptr &cloud_plane, float &subface_x_fro
 }
 
 Eigen::Matrix4f get_rotation_matrix(Eigen::Vector3d normal_start, Eigen::Vector3d normal_end, float rotation_angle) {
-  float normal_start_x = normal_start(0, 0);
-	float normal_start_y = normal_start(0, 1);
-	float normal_start_z = normal_start(0, 2);
-  float normal_end_x = normal_end(0, 0);
-	float normal_end_y = normal_end(0, 1);
-	float normal_end_z = normal_end(0, 2);
+  float normal_start_x = normal_start(0);
+	float normal_start_y = normal_start(1);
+	float normal_start_z = normal_start(2);
+  float normal_end_x = normal_end(0);
+	float normal_end_y = normal_end(1);
+	float normal_end_z = normal_end(2);
 	float rotation_ceter_x = 0, rotation_ceter_y = 0, rotation_ceter_z = 0;
 	float rotation_axis_x = (normal_end_y - normal_start_y) * (rotation_ceter_z - normal_start_z) - 
 							(rotation_ceter_y - normal_start_y) * (normal_end_z - normal_start_z);
@@ -143,7 +185,7 @@ Eigen::Matrix4f get_rotation_matrix(Eigen::Vector3d normal_start, Eigen::Vector3
 	rotation_Matrix(2, 2) = cos(rotation_angle) + (1 - cos(rotation_angle)) * rotation_axis_z * rotation_axis_z;
 
   cout << "rotation axis: (" << rotation_axis_x << "," << rotation_axis_y << "," << rotation_axis_z << ")" << endl;
-	cout << "rotation angel: " << rotation_angle / M_PI * 180 << "degree" << endl;
+	cout << "rotation angel: " << rotation_angle / M_PI * 180 << "  degree" << endl;
 	printf("rotation matrix: \n");
 	printf("            | %6.3f %6.3f %6.3f | \n", rotation_Matrix(0, 0), rotation_Matrix(0, 1), rotation_Matrix(0, 2));
 	printf("        R = | %6.3f %6.3f %6.3f | \n", rotation_Matrix(1, 0), rotation_Matrix(1, 1), rotation_Matrix(1, 2));
@@ -222,6 +264,7 @@ int main(int argc, char *argv[]) {
 	ne.setRadiusSearch(0.15);
 	ne.compute(*cloud_normals);
 	cout << "time to calculate normal: " << (double)(clock() - normal_start)/CLOCKS_PER_SEC << "s" << endl;
+  // viewers.addPointCloudNormals<pcl::PointXYZ, NormalT>(cloud_filtered, cloud_normals);
 	
 
   // [6] project to ground
@@ -242,7 +285,63 @@ int main(int argc, char *argv[]) {
   // viewers.addPointCloud<PointT>(cloud_projected_ground, cloud_filter_color_handlers, "filtered cloud");
 
 
-	// [7] segment horizontal point cloud
+  // [7] get trunk head height
+  float trunk_pos_xmax = -100.0;
+  for (size_t i = 0; i < cloud_downsampled->size(); ++i) {
+		if (cloud_downsampled->points[i].x > trunk_pos_xmax) {
+			trunk_pos_xmax = cloud_downsampled->points[i].x;
+		}
+	}
+
+  pcl::PointCloud<PointT>::Ptr cloud_head_potential(new pcl::PointCloud<PointT>);
+	for (size_t i = 0; i < cloud_downsampled->size(); ++i) {
+		if (trunk_pos_xmax - cloud_downsampled->points[i].x < 1.0 && 
+    (cloud_normals->points[i].normal_z >= 0.9 || cloud_normals->points[i].normal_z <= -0.9)) {
+			cloud_head_potential->push_back(cloud_downsampled->points[i]);
+		}
+	}
+
+  pcl::PointCloud<PointT>::Ptr cloud_trunk_head(new pcl::PointCloud<PointT>());
+	pcl::PointIndices::Ptr inliers_head(new pcl::PointIndices);
+	pcl::ModelCoefficients::Ptr plane_coefficients_trunk_head(new pcl::ModelCoefficients);
+
+	pcl::SACSegmentation<PointT> plane_trunk_head;
+	plane_trunk_head.setOptimizeCoefficients(true);
+	plane_trunk_head.setModelType(pcl::SACMODEL_PLANE);
+	plane_trunk_head.setMethodType(pcl::SAC_RANSAC);
+	plane_trunk_head.setDistanceThreshold(0.01);
+	plane_trunk_head.setInputCloud(cloud_head_potential);
+	plane_trunk_head.segment(*inliers_head, *plane_coefficients_trunk_head);
+
+	pcl::ExtractIndices<PointT> extract_trunk_head;
+	extract_trunk_head.setInputCloud(cloud_head_potential);
+	extract_trunk_head.setIndices(inliers_head);
+	extract_trunk_head.setNegative(false);
+	extract_trunk_head.filter(*cloud_trunk_head);
+#ifdef SHOW_PLANE_COEFF
+	cout << "coefficients of trunk head plane " << endl;
+	for (size_t i = 0; i < plane_coefficients_trunk_head->values.size(); ++i) {
+		cout << "	" << coeff_plane[i] << ":";
+		cout << "	" << plane_coefficients_trunk_head->values[i] << endl;
+	}
+#endif
+
+	float trunk_head_height = 0.0;
+	for (size_t i = 0; i < cloud_trunk_head->size(); ++i) {
+		trunk_head_height += cloud_trunk_head->points[i].z;
+	}
+	trunk_head_height /= cloud_trunk_head->size();
+	cout << "The height of trunk head height: " << trunk_head_height << endl;
+
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_downsampled_color_handlers(cloud_downsampled, 255, 255, 255);
+	// viewers.addPointCloud<PointT>(cloud_downsampled, cloud_downsampled_color_handlers, "downsampled cloud");
+	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_head_potential_color_handlers(cloud_head_potential, 255, 0, 0);
+	// viewers.addPointCloud<PointT>(cloud_head_potential, cloud_head_potential_color_handlers, "cloud head potential");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_head_color_handlers(cloud_trunk_head, 0, 255, 0);
+	// viewers.addPointCloud<PointT>(cloud_trunk_head, cloud_head_color_handlers, "cloud head");
+
+
+	// [8] segment horizontal point cloud
   pcl::PointCloud<PointT>::Ptr cloud_horizontal(new pcl::PointCloud<PointT>);
 	for (size_t i = 0; i < cloud_downsampled->size(); ++i) {
 		if (cloud_normals->points[i].normal_z >= 0.9 || cloud_normals->points[i].normal_z <= -0.9) {
@@ -278,11 +377,11 @@ int main(int argc, char *argv[]) {
     // cout << "cloud size cloud_horizontal_extract: " << cloud_horizontal_extract->size() << endl;
 
 #ifdef SHOW_PLANE_COEFF
-    cout << "coefficients of trunk horizontal plane " << endl;
-    for (size_t j = 0; j < vec_plane_coefficients_trunk_horizontal[i]->values.size(); ++j) {
-      cout << "	" << coeff_plane[j] << ":";
-      cout << "	" << vec_plane_coefficients_trunk_horizontal[i]->values[j] << endl;
-    }
+    // cout << "coefficients of trunk horizontal plane " << endl;
+    // for (size_t j = 0; j < vec_plane_coefficients_trunk_horizontal[i]->values.size(); ++j) {
+    //   cout << "	" << coeff_plane[j] << ":";
+    //   cout << "	" << vec_plane_coefficients_trunk_horizontal[i]->values[j] << endl;
+    // }
 #endif
 
     plane_trunk_horizontal.setInputCloud(cloud_horizontal_extract);
@@ -311,10 +410,10 @@ int main(int argc, char *argv[]) {
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal[4], cloud_horizontal4_color_handlers, "horizontal4 cloud");
 
 
-  // [8] segment subface point cloud
+  // [9] calculate the centre line and get the angle
   float subface_x_front;
   float subface_x_back; 
-  float subface_length = get_length(cloud_trunk_subface, subface_x_front, subface_x_back);
+  get_length(cloud_trunk_subface, subface_x_front, subface_x_back);
   
   pcl::PointCloud<PointT>::Ptr cloud_subface_line_front(new pcl::PointCloud<PointT>);
   pcl::PointCloud<PointT>::Ptr cloud_subface_line_back(new pcl::PointCloud<PointT>);
@@ -324,6 +423,14 @@ int main(int argc, char *argv[]) {
     if (abs(cloud_trunk_subface->points[i].x - subface_x_front) < 0.01)
 			cloud_subface_line_front->push_back(cloud_trunk_subface->points[i]);
 	}
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_downsampled_color_handlers(cloud_downsampled, 255, 255, 255);
+	// viewers.addPointCloud<PointT>(cloud_downsampled, cloud_downsampled_color_handlers, "downsampled cloud");
+	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_subface_color_handlers(cloud_trunk_subface, 255, 0, 0);
+	// viewers.addPointCloud<PointT>(cloud_trunk_subface, cloud_subface_color_handlers, "cloud subface");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_subface_line_front_color_handlers(cloud_subface_line_front, 0, 255, 0);
+  // viewers.addPointCloud<PointT>(cloud_subface_line_front, cloud_subface_line_front_color_handlers, "subface line front cloud");
+	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_subface_line_back_color_handlers(cloud_subface_line_back, 0, 255, 0);
+	// viewers.addPointCloud<PointT>(cloud_subface_line_back, cloud_subface_line_back_color_handlers, "subface line back cloud");
 
   const size_t subface_x_resolution = 3000;
   int subface_front = (subface_x_front + 13.0) * 100;
@@ -355,288 +462,180 @@ int main(int argc, char *argv[]) {
       sum_subface_y += y;
       sum_subface_xx += x * x;
       sum_subface_xy += x * y;
-      cout << "x=   " << x << "    y=    " << y << endl;
     }
   }
   
-  float centre_line_b = (num * sum_subface_xy - sum_subface_x * sum_subface_y) / (num * sum_subface_xx - sum_subface_x * sum_subface_x);
-  float centre_line_a = sum_subface_y - centre_line_b * sum_subface_x;
-
-  cout << "a=   " << centre_line_a << "      b=   " << centre_line_b << endl; 
-
+  float centre_line_k = (num * sum_subface_xy - sum_subface_x * sum_subface_y) / (num * sum_subface_xx - sum_subface_x * sum_subface_x);
+  float centre_line_b = sum_subface_y - centre_line_b * sum_subface_x;
+  cout << "centre line is y = " << centre_line_k << " + " << centre_line_b << endl; 
 
 
+  // [10] get trunk subface marking point
+  float x_marking_point;
+  float y_marking_point;
+  if (centre_line_k >= 0.0) {
+    // at the left
+    size_t marking_point_idx = 0;
+    float sum_pos_xy_max = -100;
+    for (size_t i = 0; i < cloud_trunk_subface->size(); ++i) {
+      float tmp = cloud_trunk_subface->points[i].x + cloud_trunk_subface->points[i].y;
+      if (tmp > sum_pos_xy_max) {
+        sum_pos_xy_max = tmp;
+        marking_point_idx = i;
+      }
+      x_marking_point = cloud_trunk_subface->points[marking_point_idx].x;
+      y_marking_point = cloud_trunk_subface->points[marking_point_idx].y;     
+    }
+  }
+  else {
+    // at the right
+    size_t marking_point_idx = 0;
+    float sum_pos_xy_max = -100;
+    for (size_t i = 0; i < cloud_trunk_subface->size(); ++i) {
+      float tmp = cloud_trunk_subface->points[i].x - cloud_trunk_subface->points[i].y;
+      if (tmp > sum_pos_xy_max) {
+        sum_pos_xy_max = tmp;
+        marking_point_idx = i;
+      }
+      x_marking_point = cloud_trunk_subface->points[marking_point_idx].x;
+      y_marking_point = cloud_trunk_subface->points[marking_point_idx].y;     
+    }
+  }
+
+
+  // [11] horizontal angle correction
+  float rotation_angle_horizontal = atan(abs(centre_line_k));
+  Eigen::Vector3d normal_start_horizontal(cos(rotation_angle_horizontal), sin(rotation_angle_horizontal), 0.0);
+  Eigen::Vector3d normal_end_horizontal(1.0, 0.0, 0.0);
   
+  Eigen::Matrix4f matrix_horizontal = get_rotation_matrix(normal_start_horizontal, normal_end_horizontal, rotation_angle_horizontal);
+
+  pcl::PointCloud<PointT>::Ptr cloud_downsampled_rev(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*cloud_downsampled, *cloud_downsampled_rev, matrix_horizontal);
+
+  pcl::PointCloud<PointT>::Ptr cloud_subface_rev(new pcl::PointCloud<PointT>());
+  pcl::transformPointCloud(*cloud_trunk_subface, *cloud_subface_rev, matrix_horizontal);
+
+
+  // [12] calculate normal after revise
+	cout << "calculate normal after revise..." << endl;
+	clock_t normal_start_rev = clock();
+  pcl::PointCloud<NormalT>::Ptr cloud_normals_rev(new pcl::PointCloud<NormalT>);
+  pcl::search::KdTree<PointT>::Ptr tree_rev(new pcl::search::KdTree<PointT>());
+	pcl::NormalEstimation<PointT, NormalT> ne_rev;
+	ne_rev.setInputCloud(cloud_downsampled_rev);
+	ne_rev.setSearchMethod(tree_rev);
+	ne_rev.setRadiusSearch(0.15);
+	ne_rev.compute(*cloud_normals_rev);
+	cout << "time to calculate normal after revise: " << (double)(clock() - normal_start_rev)/CLOCKS_PER_SEC << "s" << endl;
+
+
+  // [13] get subface width and length and height
+  float subface_pos_xmin = 100.0;
+  float subface_pos_xmax = -100.0;
+  float subface_pos_ymin = 100.0;
+  float subface_pos_ymax = -100.0;
+  for (size_t i = 0; i < cloud_subface_rev->size(); ++i) {
+    if (cloud_subface_rev->points[i].x > subface_pos_xmax)
+      subface_pos_xmax = cloud_subface_rev->points[i].x;
+    if (cloud_subface_rev->points[i].x < subface_pos_xmin)
+      subface_pos_xmin = cloud_subface_rev->points[i].x;
+    if (cloud_subface_rev->points[i].y > subface_pos_ymax)
+      subface_pos_ymax = cloud_subface_rev->points[i].y;
+    if (cloud_subface_rev->points[i].y < subface_pos_ymin)
+      subface_pos_ymin = cloud_subface_rev->points[i].y;
+  }
+  float subface_width = subface_pos_ymax - subface_pos_ymin;
+  float subface_length = subface_pos_xmax - subface_pos_xmin;
+  // cout << "subface_pos_xmax: " << subface_pos_xmax << endl;
+  // cout << "subface_pos_xmin: " << subface_pos_xmin << endl;
+  // cout << "subface_pos_ymax: " << subface_pos_ymax << endl;
+  // cout << "subface_pos_ymin: " << subface_pos_ymin << endl;
+
+  pcl::PointCloud<PointT>::Ptr cloud_subface_tail(new pcl::PointCloud<PointT>());
+  int num_point_subface_tail = 0;
+  float subface_tail_height = 0.0;
+  for (size_t i = 0; i < cloud_subface_rev->size(); ++i) {
+    if (cloud_subface_rev->points[i].x - subface_pos_xmin <= 0.02) {
+      num_point_subface_tail ++;
+      subface_tail_height += cloud_subface_rev->points[i].z;
+      cloud_subface_tail->push_back(cloud_subface_rev->points[i]);
+    }
+  }
+  subface_tail_height = subface_tail_height / static_cast<float>(num_point_subface_tail);
+  cout << "subface_height: " << subface_tail_height << endl;
+  cout << "subface_width: " << subface_width << endl;
+  cout << "subface_length: " << subface_length << endl;
+
+
+	// [14] segment trunk left and right plane
+	pcl::PointCloud<PointT>::Ptr trunk_plane_right(new pcl::PointCloud<PointT>());
+	pcl::PointCloud<PointT>::Ptr trunk_plane_left(new pcl::PointCloud<PointT>());
+  pcl::PointCloud<PointT>::Ptr trunk_plane_back(new pcl::PointCloud<PointT>());
+  pcl::PointCloud<PointT>::Ptr trunk_plane_front(new pcl::PointCloud<PointT>());
+  float subface_y_centre = (subface_pos_ymax + subface_pos_ymin) / 2.0;
+	for (size_t i = 0; i < cloud_normals_rev->size(); ++i) {
+    if (cloud_downsampled_rev->points[i].x < subface_pos_xmax - 0.2 && cloud_downsampled_rev->points[i].x >= subface_pos_xmin + 0.2
+        && cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+      if (cloud_downsampled_rev->points[i].y < subface_y_centre) 
+        trunk_plane_right->push_back(cloud_downsampled_rev->points[i]);
+      if (cloud_downsampled_rev->points[i].y > subface_y_centre) 
+        trunk_plane_left->push_back(cloud_downsampled_rev->points[i]);
+    }
+    else if (cloud_downsampled_rev->points[i].x < subface_pos_xmin && cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+      trunk_plane_back->push_back(cloud_downsampled_rev->points[i]);
+    }
+    else if (cloud_downsampled_rev->points[i].x > subface_pos_xmax && cloud_downsampled_rev->points[i].x < subface_pos_xmax + 1.0
+        && cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+      trunk_plane_front->push_back(cloud_downsampled_rev->points[i]);
+    }
+	}
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_rev, 255, 255, 255);
+	// viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_color_handlers, "original cloud");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_left_color_handlers(trunk_plane_left, 255, 0, 0);
+	// viewers.addPointCloud<PointT>(trunk_plane_left, trunk_plane_left_color_handlers, "cloud trunk plane left");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_right_color_handlers(trunk_plane_right, 255, 0, 0);
+	// viewers.addPointCloud<PointT>(trunk_plane_right, trunk_plane_right_color_handlers, "cloud trunk plane right");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_back_color_handlers(trunk_plane_back, 0, 0, 255);
+	// viewers.addPointCloud<PointT>(trunk_plane_back, trunk_plane_back_color_handlers, "cloud trunk plane back");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_front_color_handlers(trunk_plane_front, 0, 0, 255);
+	// viewers.addPointCloud<PointT>(trunk_plane_front, trunk_plane_front_color_handlers, "cloud trunk plane front");
+
+
+  // [15] get trunk side height
+	pcl::PointCloud<PointT>::Ptr trunk_line_left(new pcl::PointCloud<PointT>());
+	pcl::PointCloud<PointT>::Ptr trunk_line_right(new pcl::PointCloud<PointT>());
+  pcl::PointCloud<PointT>::Ptr trunk_line_back(new pcl::PointCloud<PointT>());
+  pcl::PointCloud<PointT>::Ptr trunk_line_front(new pcl::PointCloud<PointT>());
+
+	float left_height = get_side_height(trunk_plane_left, trunk_line_left, 0.01);
+	cout << "The height of the trunk left side is " << left_height << endl;
+	float right_height = get_side_height(trunk_plane_right, trunk_line_right, 0.01);
+	cout << "The height of the trunk right side is " << right_height << endl;
+  float back_height = get_fb_height(trunk_plane_back, trunk_line_back, 0.01);
+	cout << "The height of the trunk back side is " << back_height << endl;
+  float front_height = get_fb_height(trunk_plane_front, trunk_line_front, 0.01);
+	cout << "The height of the trunk front side is " << front_height << endl;
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_left_color_handlers(trunk_line_left, 0, 255, 0);
+	// viewers.addPointCloud<PointT>(trunk_line_left, trunk_line_left_color_handlers, "cloud trunk line left");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_right_color_handlers(trunk_line_right, 0, 255, 0);
+	// viewers.addPointCloud<PointT>(trunk_line_right, trunk_line_right_color_handlers, "cloud trunk line right");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_back_color_handlers(trunk_line_back, 255, 255, 0);
+	// viewers.addPointCloud<PointT>(trunk_line_back, trunk_line_back_color_handlers, "cloud trunk line back");
+  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_front_color_handlers(trunk_line_front, 255, 255, 0);
+	// viewers.addPointCloud<PointT>(trunk_line_front, trunk_line_front_color_handlers, "cloud trunk line front");
+
+
+  // [16] get trunk front height
+
+
+  // [99] visualization
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_rev, 255, 255, 255);
+	viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_color_handlers, "original cloud");
+   
 
 
 
-
-
-
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_filter_color_handlers(cloud_downsampled, 255, 255, 255);
-	viewers.addPointCloud<PointT>(cloud_downsampled, cloud_filter_color_handlers, "filtered cloud");
-  
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_subface_color_handlers(cloud_trunk_subface, 255, 0, 0);
-	viewers.addPointCloud<PointT>(cloud_trunk_subface, cloud_trunk_subface_color_handlers, "cloud trunk subface");
-
-
-  
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_subface_line_front_color_handlers(cloud_subface_line_front, 0, 255, 0);
-	viewers.addPointCloud<PointT>(cloud_subface_line_front, cloud_subface_line_front_color_handlers, "subface line front cloud");
-
-	pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_subface_line_back_color_handlers(cloud_subface_line_back, 0, 255, 0);
-	viewers.addPointCloud<PointT>(cloud_subface_line_back, cloud_subface_line_back_color_handlers, "subface line back cloud");
-
-
-
-
-
-
-
-
-	// float trunk_subface_height = 0.0;
-	// for (size_t i = 0; i < cloud_trunk_subface->size(); ++i) {
-	// 	trunk_subface_height += cloud_trunk_subface->points[i].z;
-	// }
-	// trunk_subface_height /= cloud_trunk_subface->size();
-	// cout << "The height of trunk subface height: " << trunk_subface_height << endl;
-
-
-
-
-
-
-//   // [6] segment trunk head point and get trunk head height
-// 	pcl::PointCloud<PointT>::Ptr cloud_head(new pcl::PointCloud<PointT>);
-// 	for (size_t i = 0; i < cloud_normals->size(); i++) {
-// 		if (cloud_downsampled->points[i].z > 2 && 
-// 			(cloud_normals->points[i].normal_z >= 0.9 || cloud_normals->points[i].normal_z <= -0.9) ) {
-// 			cloud_head->push_back(cloud_downsampled->points[i]);
-// 		}
-// 	}
-// 	pcl::PointCloud<PointT>::Ptr cloud_trunk_head(new pcl::PointCloud<PointT>());
-// 	pcl::PointIndices::Ptr inliers_head(new pcl::PointIndices);
-// 	pcl::ModelCoefficients::Ptr plane_coefficients_trunk_head(new pcl::ModelCoefficients);
-
-// 	pcl::SACSegmentation<PointT> plane_trunk_head;
-// 	plane_trunk_head.setOptimizeCoefficients(true);
-// 	plane_trunk_head.setModelType(pcl::SACMODEL_PLANE);
-// 	plane_trunk_head.setMethodType(pcl::SAC_RANSAC);
-// 	plane_trunk_head.setDistanceThreshold(0.01);
-// 	plane_trunk_head.setInputCloud(cloud_head);
-// 	plane_trunk_head.segment(*inliers_head, *plane_coefficients_trunk_head);
-
-// 	pcl::ExtractIndices<PointT> extract_trunk_head;
-// 	extract_trunk_head.setInputCloud(cloud_head);
-// 	extract_trunk_head.setIndices(inliers_head);
-// 	extract_trunk_head.setNegative(false);
-// 	extract_trunk_head.filter(*cloud_trunk_head);
-// #ifdef SHOW_PLANE_COEFF
-// 	cout << "coefficients of trunk head plane " << endl;
-// 	for (size_t i = 0; i < plane_coefficients_trunk_head->values.size(); ++i) {
-// 		cout << "	" << coeff_plane[i] << ":";
-// 		cout << "	" << plane_coefficients_trunk_head->values[i] << endl;
-// 	}
-// #endif
-
-// float trunk_head_height = 0.0;
-// for (size_t i = 0; i < cloud_trunk_head->size(); ++i) {
-// 	trunk_head_height += cloud_trunk_head->points[i].z;
-// }
-// trunk_head_height /= cloud_trunk_head->size();
-// cout << "The height of trunk head height: " << trunk_head_height << endl;
-
-// 	pcl::PointCloud<PointT>::Ptr potential_trunk_plane_right(new pcl::PointCloud<PointT>());
-// 	pcl::PointCloud<PointT>::Ptr trunk_plane_right(new pcl::PointCloud<PointT>());
-// 	pcl::PointCloud<PointT>::Ptr potential_trunk_plane_left(new pcl::PointCloud<PointT>());
-// 	pcl::PointCloud<PointT>::Ptr trunk_plane_left(new pcl::PointCloud<PointT>());
-// 	for (size_t i = 0; i < cloud_normals->size(); ++i) {
-// 		if (cloud_normals->points[i].normal_y >= 0.9) potential_trunk_plane_right->push_back(cloud_downsampled->points[i]);
-// 		if (cloud_normals->points[i].normal_y <= -0.9) potential_trunk_plane_left->push_back(cloud_downsampled->points[i]);
-// 	}
-
-//   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_left(new pcl::ModelCoefficients);
-// 	pcl::PointIndices::Ptr inliers_left(new pcl::PointIndices);
-
-// 	pcl::SACSegmentation<PointT> plane_trunk_left;
-// 	plane_trunk_left.setOptimizeCoefficients(true);
-// 	plane_trunk_left.setModelType(pcl::SACMODEL_PLANE);
-// 	plane_trunk_left.setMethodType(pcl::SAC_RANSAC);
-// 	plane_trunk_left.setDistanceThreshold(0.01);
-//   plane_trunk_left.setInputCloud(potential_trunk_plane_left);
-// 	plane_trunk_left.segment(*inliers_left, *plane_coefficients_trunk_left);
-
-// 	pcl::ExtractIndices<PointT> extract_trunk_left;
-// 	extract_trunk_left.setNegative(false);
-// 	extract_trunk_left.setInputCloud(potential_trunk_plane_left);
-// 	extract_trunk_left.setIndices(inliers_left);
-// 	extract_trunk_left.filter(*trunk_plane_left);
-
-// #ifdef SHOW_PLANE_COEFF
-// 	cout << "coefficients of trunk left plane " << endl;
-// 	for (size_t i = 0; i < plane_coefficients_trunk_left->values.size(); ++i) {
-// 		cout << "	" << coeff_plane[i] << ":";
-// 		cout << "	" << plane_coefficients_trunk_left->values[i] << endl;
-// 	}
-// #endif
-
-// 	pcl::ModelCoefficients::Ptr plane_coefficients_trunk_right(new pcl::ModelCoefficients);
-// 	pcl::PointIndices::Ptr inliers_right(new pcl::PointIndices);
-
-// 	pcl::SACSegmentation<PointT> plane_trunk_right;
-// 	plane_trunk_right.setOptimizeCoefficients(true);
-// 	plane_trunk_right.setModelType(pcl::SACMODEL_PLANE);
-// 	plane_trunk_right.setMethodType(pcl::SAC_RANSAC);
-// 	plane_trunk_right.setDistanceThreshold(0.01);
-//   plane_trunk_right.setInputCloud(potential_trunk_plane_right);
-// 	plane_trunk_right.segment(*inliers_right, *plane_coefficients_trunk_right);
-
-// 	pcl::ExtractIndices<PointT> extract_trunk_right;
-// 	extract_trunk_right.setNegative(false);
-// 	extract_trunk_right.setInputCloud(potential_trunk_plane_right);
-// 	extract_trunk_right.setIndices(inliers_right);
-// 	extract_trunk_right.filter(*trunk_plane_right);
-
-// #ifdef SHOW_PLANE_COEFF
-// 	cout << "coefficients of trunk right plane " << endl;
-// 	for (size_t i = 0; i < plane_coefficients_trunk_right->values.size(); ++i) {
-// 		cout << "	" << coeff_plane[i] << ":";
-// 		cout << "	" << plane_coefficients_trunk_right->values[i] << endl;
-// 	}
-// #endif
-
-//   // float trunk_width = abs(plane_coefficients_trunk_left->values[3] - plane_coefficients_trunk_right->values[3]);
-//   // cout << "The width of the trunk is " << trunk_width << endl;
-
-
-//   // [8] restruct trunk left anfd right plane
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_left_restruct(new pcl::PointCloud<PointT>());
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_right_restruct(new pcl::PointCloud<PointT>());
-//   pcl::ProjectInliers<PointT> proj;
-//   proj.setModelType(pcl::SACMODEL_PLANE);
-  
-//   plane_coefficients_trunk_left->values[3] = 0.0;
-//   proj.setInputCloud(trunk_plane_left);
-//   proj.setModelCoefficients(plane_coefficients_trunk_left);
-//   proj.filter(*trunk_plane_left_restruct);
-  
-//   plane_coefficients_trunk_right->values[3] = 0.0;
-//   proj.setInputCloud(trunk_plane_right);
-//   proj.setModelCoefficients(plane_coefficients_trunk_right);
-//   proj.filter(*trunk_plane_right_restruct);
-  
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_side_restruct(new pcl::PointCloud<PointT>());
-//   for (size_t i = 0; i < trunk_plane_left_restruct->size(); i++) {
-//     trunk_plane_side_restruct->push_back(trunk_plane_left_restruct->points[i]);
-// 	}
-//   for (size_t i = 0; i < trunk_plane_right_restruct->size(); i++) {
-//     trunk_plane_side_restruct->push_back(trunk_plane_right_restruct->points[i]);
-// 	}
-  
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_side_plane_restruct(new pcl::PointCloud<PointT>());
-//   pcl::ModelCoefficients::Ptr plane_coefficients_trunk_side(new pcl::ModelCoefficients);
-// 	pcl::PointIndices::Ptr inliers_side(new pcl::PointIndices);
-
-// 	pcl::SACSegmentation<PointT> plane_trunk_side;
-// 	plane_trunk_side.setOptimizeCoefficients(true);
-// 	plane_trunk_side.setModelType(pcl::SACMODEL_PLANE);
-// 	plane_trunk_side.setMethodType(pcl::SAC_RANSAC);
-// 	plane_trunk_side.setDistanceThreshold(0.01);
-//   plane_trunk_side.setInputCloud(trunk_plane_side_restruct);
-// 	plane_trunk_side.segment(*inliers_side, *plane_coefficients_trunk_side);
-// #ifdef SHOW_PLANE_COEFF
-// 	cout << "coefficients of trunk side plane " << endl;
-// 	for (size_t i = 0; i < plane_coefficients_trunk_side->values.size(); ++i) {
-// 		cout << "	" << coeff_plane[i] << ":";
-// 		cout << "	" << plane_coefficients_trunk_side->values[i] << endl;
-// 	}
-// #endif
- 
-//   float left_D = 0.0, right_D = 0.0;
-//   for (size_t i = 0; i < trunk_plane_left->size(); i++) {
-//     left_D += plane_coefficients_trunk_side->values[0] * trunk_plane_left->points[i].x;
-//     left_D += plane_coefficients_trunk_side->values[1] * trunk_plane_left->points[i].y;
-//     left_D += plane_coefficients_trunk_side->values[2] * trunk_plane_left->points[i].z;
-// 	}
-//   left_D /= trunk_plane_left->size();
-//   for (size_t i = 0; i < trunk_plane_right->size(); i++) {
-//     right_D += plane_coefficients_trunk_side->values[0] * trunk_plane_right->points[i].x;
-//     right_D += plane_coefficients_trunk_side->values[1] * trunk_plane_right->points[i].y;
-//     right_D += plane_coefficients_trunk_side->values[2] * trunk_plane_right->points[i].z;
-// 	}
-//   right_D /= trunk_plane_right->size();
-  
-//   float trunk_width = abs(right_D - left_D);
-//   cout << "The width of the trunk is " << trunk_width << endl;
-
-
-//   // [9] get trunk side height
-// 	pcl::PointCloud<PointT>::Ptr trunk_line_left(new pcl::PointCloud<PointT>());
-// 	pcl::PointCloud<PointT>::Ptr trunk_line_right(new pcl::PointCloud<PointT>());
-
-// 	float left_height = get_height(trunk_plane_left, trunk_line_left);
-// 	cout << "The height of the trunk left side is " << left_height << endl;
-// 	float right_height = get_height(trunk_plane_right, trunk_line_right);
-// 	cout << "The height of the trunk right side is " << right_height << endl;
-//   float trunk_side_height = (left_height + right_height) / 2 ;
-//   cout << "The height of the trunk side is " << trunk_side_height << endl;
-
-
-// 	// [10] get trunk length
-
-// 	pcl::PointCloud<PointT>::Ptr cloud_trunk_subface_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*cloud_trunk_subface, *cloud_trunk_subface_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr cloud_downsampled_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*cloud_downsampled, *cloud_downsampled_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr cloud_trunk_head_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*cloud_trunk_head, *cloud_trunk_head_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_left_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*trunk_plane_left, *trunk_plane_left_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr trunk_plane_right_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*trunk_plane_right, *trunk_plane_right_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr trunk_line_left_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*trunk_line_left, *trunk_line_left_after_revise, rotation_Matrix);
-
-//   pcl::PointCloud<PointT>::Ptr trunk_line_right_after_revise(new pcl::PointCloud<PointT>());
-// 	pcl::transformPointCloud(*trunk_line_right, *trunk_line_right_after_revise, rotation_Matrix);
-
- 
-//   pcl::PointCloud<PointT>::Ptr cloud_line_fb(new pcl::PointCloud<PointT>());
-// 	float trunk_length = get_length(cloud_trunk_subface_after_revise, cloud_line_fb);
-// 	cout << "The length of the trunk is " << trunk_length << endl;
-
-
-  // [11] visualization
-	// viewers.addPointCloudNormals<pcl::PointXYZ, NormalT>(cloud_filtered, cloud_normals);
-
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_after_revise, 255, 255, 255);
-	// viewers.addPointCloud<PointT>(cloud_downsampled_after_revise, oricloud_color_handlers, "original cloud");
-
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_subface_color_handlers(cloud_trunk_subface_after_revise, 255, 0, 0);
-	// viewers.addPointCloud<PointT>(cloud_trunk_subface_after_revise, cloud_trunk_subface_color_handlers, "cloud trunk subface");
-
-  // pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_trunk_head_color_handlers(cloud_trunk_head_after_revise, 0, 255, 0);
-	// viewers.addPointCloud<PointT>(cloud_trunk_head_after_revise, cloud_trunk_head_color_handlers, "cloud trunk head");
-
-  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_left_color_handlers(trunk_plane_left_after_revise, 0, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_plane_left_after_revise, trunk_plane_left_color_handlers, "cloud trunk plane left");
-
-  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_right_color_handlers(trunk_plane_right_after_revise, 255, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_plane_right_after_revise, trunk_plane_right_color_handlers, "cloud trunk plane right");
-
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_left_color_handlers(trunk_line_left_after_revise, 255, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_line_left_after_revise, trunk_line_left_color_handlers, "cloud trunk line left");
-
-  // pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_right_color_handlers(trunk_line_right_after_revise, 0, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_line_right_after_revise, trunk_line_right_color_handlers, "cloud trunk line right");
-
-	// pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_fb_color_handlers(cloud_line_fb, 0, 255, 255);
-	// viewers.addPointCloud<PointT>(cloud_line_fb, trunk_line_fb_color_handlers, "cloud line front back");
 
 	viewers.spin();
 	return 0;
