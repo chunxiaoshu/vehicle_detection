@@ -626,15 +626,36 @@ int main(int argc, char *argv[]) {
 	// viewers.addPointCloud<PointT>(trunk_line_front, trunk_line_front_color_handlers, "cloud trunk line front");
 
 
-  // [16] get trunk front height
-
-
   // [99] visualization
   pcl::visualization::PointCloudColorHandlerCustom<PointT> oricloud_color_handlers(cloud_downsampled_rev, 255, 255, 255);
 	viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_color_handlers, "original cloud");
-   
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> plane_subface_color_handlers(cloud_subface_rev, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_subface_rev, plane_subface_color_handlers, "subface cloud");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_left_color_handlers(trunk_plane_left, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_left, trunk_plane_left_color_handlers, "cloud trunk plane left");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_right_color_handlers(trunk_plane_right, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_right, trunk_plane_right_color_handlers, "cloud trunk plane right");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_back_color_handlers(trunk_plane_back, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_plane_back, trunk_plane_back_color_handlers, "cloud trunk plane back");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_plane_front_color_handlers(trunk_plane_front, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_plane_front, trunk_plane_front_color_handlers, "cloud trunk plane front");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_left_color_handlers(trunk_line_left, 255, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_left, trunk_line_left_color_handlers, "cloud trunk line left");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_right_color_handlers(trunk_line_right, 255, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_right, trunk_line_right_color_handlers, "cloud trunk line right");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_back_color_handlers(trunk_line_back, 255, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_line_back, trunk_line_back_color_handlers, "cloud trunk line back");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> trunk_line_front_color_handlers(trunk_line_front, 255, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_line_front, trunk_line_front_color_handlers, "cloud trunk line front");
 
-
+  pcl::PointCloud<PointT>::Ptr cloud_head_potential_rev(new pcl::PointCloud<PointT>());
+	pcl::transformPointCloud(*cloud_head_potential, *cloud_head_potential_rev, matrix_horizontal);
+  pcl::PointCloud<PointT>::Ptr cloud_trunk_head_rev(new pcl::PointCloud<PointT>());
+  pcl::transformPointCloud(*cloud_trunk_head, *cloud_trunk_head_rev, matrix_horizontal);
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_head_potential_color_handlers(cloud_head_potential_rev, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_head_potential_rev, cloud_head_potential_color_handlers, "cloud head potential");
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_head_color_handlers(cloud_trunk_head_rev, 0, 255, 0);
+	viewers.addPointCloud<PointT>(cloud_trunk_head_rev, cloud_head_color_handlers, "cloud head");
 
 
 	viewers.spin();
