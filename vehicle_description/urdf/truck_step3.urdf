@@ -12,7 +12,7 @@
     <collision name="chassis">
        <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
       <geometry>
-        <mesh filename="package://vehicle_description/meshes/truck/truck_step1.stl" scale="0.00001 0.00001 0.00001"/>
+        <mesh filename="package://vehicle_description/meshes/truck/truck_step3.stl" scale="0.00001 0.00001 0.00001"/>
       </geometry>
     </collision>
 
