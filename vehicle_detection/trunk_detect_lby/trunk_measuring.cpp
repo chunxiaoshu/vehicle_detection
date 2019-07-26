@@ -640,7 +640,7 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
         //提取点最多的点云，是可能的step云
         pcl::PointCloud<PointT>::Ptr cloud_step_filtered(new pcl::PointCloud<PointT>);
         int step_max_point_nums=0;
-        int counter_it=0
+        int counter_it=0;
         int select_step_index;
         for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices_step_plane.begin (); it != cluster_indices_step_plane.end (); ++it)
         {
@@ -672,7 +672,7 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
             step=true;//判断有step
         }
         vector<int> inline_in_box_others;
-        getApproximateIndices(cloud_in_box,cloud_step_filtered,inline_in_box_others);
+        pcl::getApproximateIndices(cloud_in_box,cloud_step_filtered,inline_in_box_others);
         pcl::ExtractIndices<PointT> extract_others_in_box;
         extract_others_in_box.setInputCloud(cloud_in_box);
         extract_others_in_box.setIndices(inline_in_box_others);
@@ -686,11 +686,51 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
     }
     else{
         pcl::copyPointCloud(cloud_in_box,cloud_in_box_except_step);
+    }if(step){
+        cout<<"step found!"<<endl;
+        float step_height=0;
+        for(size_t i=0;size_t<cloud_step_filtered->size();i++){
+            step_height+=cloud_step_filtered->points[i].z;
+        }
+        step_height/=cloud_step_filtered->size();
     }
-    //////////////////////////////////////////////////////////////////////////
-    //杂物提取          从cloud_in_box中去除cloud_step_filtered 作为 cloud_in_box_except_step
-    //记得把车头提取放后面！算法有重大问题
+    else{
+        cout<<"step not found"<<endl;
+    }
     
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //若有阶梯  将cloud_step_filtered投影到ground，构成AABB包络，并将AABB包络通过反向变化得到原位姿的阶梯投影
+    if(step){
+        pcl::ProjectInliers<pcl::PointXYZ> project_step_ground;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr step_projected_ground_stable(new pcl::PointCloud<pcl::PointXYZ>);
+        project_step_ground.setModelType(pcl::SACMODEL_PLANE);
+        project_step_ground.setInputCloud(cloud_step_filtered);
+        project_step_ground.setModelCoefficients(coe_ground);
+        project_step_ground.filter(*step_projected_ground_stable);
+        cout<<"step has been projected to the ground"<<endl;
+
+        pcl::PointXYZ min_point_AABB_step;
+        pcl::PointXYZ max_point_AABB_step;
+
+        pcl::MomentOfInertiaEstimation <pcl::PointXYZ> step_AABB_extractor;
+        step_AABB_extractor.setInputCloud (step_projected_ground_stable);
+        step_AABB_extractor.compute ();
+
+        step_AABB_extractor.getAABB (min_point_AABB_step, max_point_AABB_step);//此时计算的AABB是重新矫正后的坐标，要获得真实坐标需要进行旋转平移操作
+
+        viewer.addCube (position, quat, max_point_AABB_step.x - min_point_AABB_step.x, max_point_AABB_step.y - min_point_AABB_step.y, max_point_AABB_step.z - min_point_AABB_step.z, "AABB");
+
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 
