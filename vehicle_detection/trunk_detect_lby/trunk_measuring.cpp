@@ -45,6 +45,9 @@ bool hydro=false;
 int num_stuff=0;
 int num_strip=0;
 //double ans[17]={0};
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 float get_height(pcl::PointCloud<PointT>::Ptr &cloud_plane, pcl::PointCloud<PointT>::Ptr &cloud_line) {
 	const size_t high_lengh = 3000;
@@ -572,25 +575,40 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
 //[in] trunk_side_height subface_height threadhold trunk_plane_side_restruct for subface SAC:0.01
         //求trunk ——side_height max_x_side min_x_side
     float max_x_side=0,min_x_side=0;
-    for(size_t i=0;i<trunk_plane_side_plane_restruct->size();i++){
-        if (trunk_plane_side_plane_restruct->points[i].x>max_x_side)
-            max_x_side=trunk_plane_side_plane_restruct->points[i].x;
-        if (trunk_plane_side_plane_restruct->points[i].x<min_x_side)
-            min_x_side=trunk_plane_side_plane_restruct->points[i].x;
+    
+    for(size_t i=0;i<trunk_plane_side_restruct->size();i++){
+        if (trunk_plane_side_restruct->points[i].x>max_x_side)
+            max_x_side=trunk_plane_side_restruct->points[i].x;
+        if (trunk_plane_side_restruct->points[i].x<min_x_side)
+            min_x_side=trunk_plane_side_restruct->points[i].x;
     }
+    cout<<"max_x_side="<<max_x_side<<endl;
+    cout<<"min_x_side="<<min_x_side<<endl;
+
     pcl::PointCloud<PointT>::Ptr potential_step(new pcl::PointCloud<PointT>);
     pcl::PointCloud<PointT>::Ptr cloud_in_box(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr cloud_in_box_except_step(new pcl::PointCloud<PointT>);
+    vector<size_t> potential_step_index_of_cloud_stable;
+
     for(size_t i=0;i<cloud_stable->size();i++){
-        if((cloud_stable->points[i].z>(subface_height+0.03)) && cloud_stable->points[i].x<(max_x_side-0.02) && cloud_stable->points[i].x>(min_x_side+0.02) && 
-                (cloud_stable_normals->points[i].normal_z> 0.5 || cloud_stable_normals->points[i].normal_z< -0.5)){
+        bool a1=false;
+        bool a2=false;
+        if((cloud_stable->points[i].z>(subface_height+0.03)) && cloud_stable->points[i].z<(trunk_side_height-0.2) && cloud_stable->points[i].x<(max_x_side-0.02) && cloud_stable->points[i].x>(min_x_side+0.02) && 
+                (cloud_stable_normals->points[i].normal_z> 0.5 || cloud_stable_normals->points[i].normal_z< -0.5)&&(cloud_stable_normals->points[i].normal_z< 0.9 || cloud_stable_normals->points[i].normal_z> -0.9)){
                cloud_in_box->points.push_back(cloud_stable->points[i]);
+               
             }
-        else if((cloud_stable->points[i].z>(subface_height+0.03)) && cloud_stable->points[i].x<(max_x_side-0.01) && cloud_stable->points[i].x>(min_x_side+0.01) && 
+        if((cloud_stable->points[i].z>(subface_height+0.03)) && cloud_stable->points[i].x<(max_x_side-0.01) && cloud_stable->points[i].x>(min_x_side+0.01) && 
                 (cloud_stable_normals->points[i].normal_z> 0.9 || cloud_stable_normals->points[i].normal_z< -0.9)){
                     potential_step->points.push_back(cloud_stable->points[i]);
+                   
                 }
+       
     }
-    pcl::PointCloud<PointT>::Ptr cloud_step_plane(new pcl::PointCloud<PointT>());
+    cout<<"potential_step find:"<<potential_step->size()<<" points"<<endl;
+    pcl::PointCloud<PointT>::Ptr cloud_step_plane(new pcl::PointCloud<PointT>);
+
+
     pcl::ModelCoefficients::Ptr plane_step(new pcl::ModelCoefficients);
 	pcl::PointIndices::Ptr inliers_step(new pcl::PointIndices);
     pcl::SACSegmentation<PointT> plane_step_SAC;
@@ -602,18 +620,18 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
 	plane_step_SAC.segment(*inliers_step, *plane_step);
     
     if(inliers_step->indices.size()!=0){
-
         pcl::ExtractIndices<PointT> extract_step;
         extract_step.setInputCloud(potential_step);
         extract_step.setIndices(inliers_step);
         extract_step.setNegative(false);
         extract_step.filter(*cloud_step_plane);
+     
         // 欧几里得聚簇分离可能的step和高度相同的杂物
         pcl::search::KdTree<pcl::PointXYZ>::Ptr tree_step (new pcl::search::KdTree<pcl::PointXYZ>);
         tree_step->setInputCloud (cloud_step_plane);
         std::vector<pcl::PointIndices> cluster_indices_step_plane;
         pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-        ec.setClusterTolerance (0.02); // 2cm,根据相机步进长度设置
+        ec.setClusterTolerance (0.1); // 1dm,根据相机步进长度设置
         ec.setMinClusterSize (100);
         ec.setMaxClusterSize (250000);
         ec.setSearchMethod (tree_step);
@@ -622,16 +640,19 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
         //提取点最多的点云，是可能的step云
         pcl::PointCloud<PointT>::Ptr cloud_step_filtered(new pcl::PointCloud<PointT>);
         int step_max_point_nums=0;
+        int counter_it=0
+        int select_step_index;
         for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices_step_plane.begin (); it != cluster_indices_step_plane.end (); ++it)
         {
             if(it->indices.size()>step_max_point_nums){
-                for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-                    cloud_step_filtered->points.push_back (cloud_step_plane->points[*pit]); //*
+                for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
+                    cloud_step_filtered->points.push_back (cloud_step_plane->points[*pit]); 
+                    }
                     cloud_step_filtered->width = cloud_step_filtered->points.size ();
                     cloud_step_filtered->height = 1;
                     cloud_step_filtered->is_dense = true;
-            step_max_point_nums=cloud_step_filtered->size();
             }
+            
         }
 
         // 将cloud_step_filtered投射到ground，落在subface OBB中的点数小于cloud_step 总点数的5%，即证明是step
@@ -650,16 +671,34 @@ cout << "The height of trunk head height: " << trunk_head_height << endl;
         if((counter_error_point/step_projected_ground->size())<0.05){
             step=true;//判断有step
         }
-    
+        vector<int> inline_in_box_others;
+        getApproximateIndices(cloud_in_box,cloud_step_filtered,inline_in_box_others);
+        pcl::ExtractIndices<PointT> extract_others_in_box;
+        extract_others_in_box.setInputCloud(cloud_in_box);
+        extract_others_in_box.setIndices(inline_in_box_others);
+        extract_others_in_box.setNegative(false);
+        extract_others_in_box.filter(*cloud_in_box_except_step);
+
+        viewer.addPointCloud(cloud_step_filtered,"aaaaa");
+
+        
 
     }
+    else{
+        pcl::copyPointCloud(cloud_in_box,cloud_in_box_except_step);
+    }
+    //////////////////////////////////////////////////////////////////////////
+    //杂物提取          从cloud_in_box中去除cloud_step_filtered 作为 cloud_in_box_except_step
+    //记得把车头提取放后面！算法有重大问题
+    
 
 
 
 
 
 
-viewer.addPointCloud(cloud_in_box,"ccc");
+
+
 
 
 
