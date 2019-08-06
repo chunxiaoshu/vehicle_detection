@@ -1,3 +1,0 @@
-/home/byliu/Documents/car_detection/src/vehicle_detection/vehicle_detection/trunk_detect_lby/build/CMakeFiles/rebuild_cache.dir
-/home/byliu/Documents/car_detection/src/vehicle_detection/vehicle_detection/trunk_detect_lby/build/CMakeFiles/trunk_measuring.dir
-/home/byliu/Documents/car_detection/src/vehicle_detection/vehicle_detection/trunk_detect_lby/build/CMakeFiles/edit_cache.dir
