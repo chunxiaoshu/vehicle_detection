@@ -201,10 +201,10 @@ int get_marking_point(PointPtr cloud_plane, float &x_marking_point, float &y_mar
 	return 0;
 }
 
-int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<PointPtr> vec_cloud_side_protrusion,
-	std::vector<float> vec_trunk_side_protrusion_height, std::vector<float> vec_trunk_side_protrusion_xmax,
-	std::vector<float> vec_trunk_side_protrusion_xmin, std::vector<float> vec_trunk_side_protrusion_ymax,
-	std::vector<float> vec_trunk_side_protrusion_ymin) {
+int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<PointPtr> &vec_cloud_side_protrusion,
+	std::vector<float> &vec_trunk_side_protrusion_height, std::vector<float> &vec_trunk_side_protrusion_xmax,
+	std::vector<float> &vec_trunk_side_protrusion_xmin, std::vector<float> &vec_trunk_side_protrusion_ymax,
+	std::vector<float> &vec_trunk_side_protrusion_ymin) {
 	PointPtr trunk_side_protrusion_potential(new pcl::PointCloud<PointT>());
 	for (size_t i = 0; i < cloud_plane->size(); ++i) {
 		if (cloud_plane->points[i].z > side_height) {
@@ -240,7 +240,6 @@ int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<Poi
 		pcl::PointIndices cluster_index = cluster_side_protrusion[i];
 		for (std::vector<int>::const_iterator it = cluster_index.indices.begin(); it != cluster_index.indices.end(); ++it)
       		cloud_cluster->push_back(trunk_side_protrusion_potential->points[*it]);
-		vec_cloud_side_protrusion.push_back(cloud_cluster);
 
 		for (size_t i = 0; i < cloud_cluster->size(); ++i) {
 			if (cloud_cluster->points[i].z > trunk_side_protrusion_height)
@@ -254,6 +253,13 @@ int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<Poi
 			if (cloud_cluster->points[i].y < trunk_side_protrusion_ymin)
 				trunk_side_protrusion_ymin = cloud_cluster->points[i].y;
 		}
+
+		vec_cloud_side_protrusion.push_back(cloud_cluster);
+		vec_trunk_side_protrusion_height.push_back(trunk_side_protrusion_height);
+		vec_trunk_side_protrusion_xmax.push_back(trunk_side_protrusion_xmax);
+		vec_trunk_side_protrusion_xmin.push_back(trunk_side_protrusion_xmin);
+		vec_trunk_side_protrusion_ymax.push_back(trunk_side_protrusion_ymax);
+		vec_trunk_side_protrusion_ymin.push_back(trunk_side_protrusion_ymin);
 
 		// std::cout << "point size of cluster" << i << "at side protrusion is: " << cloud_cluster->size() << std::endl;
 		// std::cout << "trunk side protrusion of cluster " << i << " height: " << trunk_side_protrusion_height << std::endl;
@@ -924,6 +930,7 @@ int main(int argc, char *argv[]) {
 	std::vector<float> vec_trunk_ymax(width_size, -100.0);
 	std::vector<float> vec_trunk_ymin(width_size, 100.0);
 
+	// // [19.1] method 1
 	// for (size_t i = 0; i < cloud_subface_rev->size(); ++i) {
 	// 	if (cloud_subface_rev->points[i].x <= trunk_front && cloud_subface_rev->points[i].x >= trunk_back) {
 	// 		int temp = static_cast<int>((trunk_front - cloud_subface_rev->points[i].x) / WIDTH_RESOLUTION);
@@ -943,6 +950,7 @@ int main(int argc, char *argv[]) {
 	// 	// cout << "i    " << i << "    vec_trunk_width    " << vec_trunk_width[i] << endl;
 	// }
 
+	// [19.2] method 2
 	PointPtr cloud_subface_hull(new pcl::PointCloud<PointT>());
 	std::vector<pcl::Vertices> polygons_subface;
 	pcl::ConcaveHull<PointT> concavehull_subface;
@@ -1016,8 +1024,35 @@ int main(int argc, char *argv[]) {
 		vec_trunk_ymax[i] = subface_left_line_k * posx + subface_left_line_b;
 		vec_trunk_ymin[i] = subface_right_line_k * posx + subface_right_line_b;
 		vec_trunk_width[i] = vec_trunk_ymax[i] - vec_trunk_ymin[i];
-		cout << "i    " << i << "    vec_trunk_width    " << vec_trunk_width[i] << endl;
+		// cout << "i    " << i << "    vec_trunk_width    " << vec_trunk_width[i] << endl;
 	}
+
+	// // [19.3] method 3
+	// std::vector<float> vec_trunk_width(width_size, 0);
+	// std::vector<float> vec_trunk_ymax(width_size, 0.0);
+	// std::vector<float> vec_trunk_ymin(width_size, 0.0);
+	// std::vector<int> vec_trunk_width_left_num(width_size, 0);
+	// std::vector<int> vec_trunk_width_right_num(width_size, 0);
+	// for (size_t i = 0; i < trunk_line_height_left->size(); ++i) {
+	// 	if (trunk_line_height_left->points[i].x <= trunk_front && trunk_line_height_left->points[i].x >= trunk_back) {
+	// 		int temp = static_cast<int>((trunk_front - trunk_line_height_left->points[i].x) / WIDTH_RESOLUTION);
+	// 		vec_trunk_ymax[temp] += trunk_line_height_left->points[i].y;
+	// 		vec_trunk_width_left_num[temp]++;
+	// 	}
+	// }
+	// for (size_t i = 0; i < trunk_line_height_right->size(); ++i) {
+	// 	if (trunk_line_height_right->points[i].x <= trunk_front && trunk_line_height_right->points[i].x >= trunk_back) {
+	// 		int temp = static_cast<int>((trunk_front - trunk_line_height_right->points[i].x) / WIDTH_RESOLUTION);
+	// 		vec_trunk_ymin[temp] += trunk_line_height_right->points[i].y;
+	// 		vec_trunk_width_right_num[temp]++;
+	// 	}
+	// }
+	// for (int i = 0; i < width_size; ++i) {
+	// 	vec_trunk_ymax[i] /= vec_trunk_width_left_num[i];
+	// 	vec_trunk_ymin[i] /= vec_trunk_width_right_num[i];
+	// 	vec_trunk_width[i] = vec_trunk_ymax[i] - vec_trunk_ymin[i];
+	// 	cout << "i    " << i << "    vec_trunk_width    " << vec_trunk_width[i] << endl;
+	// }
 
 	// VisualizationHandle cloud_subface_colorh(cloud_subface_rev, 255, 255, 255);
 	// viewers.addPointCloud<PointT>(cloud_subface_rev, cloud_subface_colorh, "subface cloud");
@@ -1052,7 +1087,7 @@ int main(int argc, char *argv[]) {
 						vec_trunk_left_protrusion_xmax, vec_trunk_left_protrusion_xmin,
 						vec_trunk_left_protrusion_ymax, vec_trunk_left_protrusion_ymin);
 	for (int i = 0; i < vec_cloud_left_protrusion.size(); ++i) {
-		std::cout << "point size of cluster" << i << "at left protrusion is: " << vec_cloud_left_protrusion[i]->size() << std::endl;
+		std::cout << "point size of cluster " << i << " at left protrusion is: " << vec_cloud_left_protrusion[i]->size() << std::endl;
 		std::cout << "trunk left protrusion of cluster " << i << " height: " << vec_trunk_left_protrusion_height[i] << std::endl;
 		std::cout << "trunk left protrusion of cluster " << i << " xmax: " << vec_trunk_left_protrusion_xmax[i] << std::endl;
 		std::cout << "trunk left protrusion of cluster " << i << " xmin: " << vec_trunk_left_protrusion_xmin[i] << std::endl;
@@ -1070,7 +1105,7 @@ int main(int argc, char *argv[]) {
 						vec_trunk_right_protrusion_xmax, vec_trunk_right_protrusion_xmin,
 						vec_trunk_right_protrusion_ymax, vec_trunk_right_protrusion_ymin);
 	for (int i = 0; i < vec_cloud_right_protrusion.size(); ++i) {
-		std::cout << "point size of cluster" << i << "at right protrusion is: " << vec_cloud_right_protrusion[i]->size() << std::endl;
+		std::cout << "point size of cluster " << i << " at right protrusion is: " << vec_cloud_right_protrusion[i]->size() << std::endl;
 		std::cout << "trunk right protrusion of cluster " << i << " height: " << vec_trunk_right_protrusion_height[i] << std::endl;
 		std::cout << "trunk right protrusion of cluster " << i << " xmax: " << vec_trunk_right_protrusion_xmax[i] << std::endl;
 		std::cout << "trunk right protrusion of cluster " << i << " xmin: " << vec_trunk_right_protrusion_xmin[i] << std::endl;
@@ -1088,7 +1123,7 @@ int main(int argc, char *argv[]) {
 						vec_trunk_back_protrusion_xmax, vec_trunk_back_protrusion_xmin,
 						vec_trunk_back_protrusion_ymax, vec_trunk_back_protrusion_ymin);
 	for (int i = 0; i < vec_cloud_back_protrusion.size(); ++i) {
-		std::cout << "point size of cluster" << i << "at back protrusion is: " << vec_cloud_back_protrusion[i]->size() << std::endl;
+		std::cout << "point size of cluster " << i << " at back protrusion is: " << vec_cloud_back_protrusion[i]->size() << std::endl;
 		std::cout << "trunk back protrusion of cluster " << i << " height: " << vec_trunk_back_protrusion_height[i] << std::endl;
 		std::cout << "trunk back protrusion of cluster " << i << " xmax: " << vec_trunk_back_protrusion_xmax[i] << std::endl;
 		std::cout << "trunk back protrusion of cluster " << i << " xmin: " << vec_trunk_back_protrusion_xmin[i] << std::endl;
@@ -1170,6 +1205,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (trunk_inside_protrusion_ymax - trunk_inside_protrusion_ymin < 0.03)
+			continue;
+		if (trunk_inside_protrusion_xmax - trunk_inside_protrusion_xmin < 0.03)
 			continue;
 
 		vec_cloud_inside_protrusion.push_back(cloud_cluster);
