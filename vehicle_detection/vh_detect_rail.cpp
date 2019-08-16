@@ -43,7 +43,7 @@ typedef pcl::PointCloud<NormalT>::Ptr NormalPtr;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointT> VisualizationHandle;
 
 const double PI = 3.14159265;
-const int HORIZONTAL_PLANE_NUM = 4;
+const int HORIZONTAL_PLANE_NUM = 3;
 const float GROUNG_ZMAX = 0.8;
 const float TRUNK_X_OFFSET = 20.0;
 const float TRUNK_Y_OFFSET = 5.0;
@@ -102,6 +102,7 @@ float get_fb_height(PointPtr cloud, PointPtr &cloud_line, float threshold) {
 	size_t plane_high_distribute[height_step] = {0};
 	for (size_t i = 0; i < cloud->size(); ++i) {
 		size_t tmp = static_cast<int>((cloud->points[i].y + TRUNK_X_OFFSET) * 100);
+		// std::cout << tmp << "   ";
 		if (plane_high[tmp] < cloud->points[i].z) {
 			plane_high[tmp] = cloud->points[i].z;
 			plane_high_idx[tmp] = i;
@@ -113,6 +114,7 @@ float get_fb_height(PointPtr cloud, PointPtr &cloud_line, float threshold) {
 			size_t tmp = static_cast<int>(plane_high[i] * 100);
 			++plane_high_distribute[tmp];
 		}
+		// std::cout << "plane_high " << i << "  " << plane_high[i] << "  ";
 	}
 
 	for (size_t i = 1; i < height_step; ++i) {
@@ -122,6 +124,7 @@ float get_fb_height(PointPtr cloud, PointPtr &cloud_line, float threshold) {
 		}
 	}
 	float height_tmp = static_cast<float>(height_max) / 100;
+	// std::cout << "height_tmp is " << height_tmp << std::endl;
 
 	for (size_t i = 0; i < cloud->size(); ++i) {
 		if (abs(cloud->points[i].z - height_tmp) < threshold) {
@@ -205,6 +208,7 @@ int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<Poi
 	std::vector<float> &vec_trunk_side_protrusion_height, std::vector<float> &vec_trunk_side_protrusion_xmax,
 	std::vector<float> &vec_trunk_side_protrusion_xmin, std::vector<float> &vec_trunk_side_protrusion_ymax,
 	std::vector<float> &vec_trunk_side_protrusion_ymin) {
+
 	PointPtr trunk_side_protrusion_potential(new pcl::PointCloud<PointT>());
 	for (size_t i = 0; i < cloud_plane->size(); ++i) {
 		if (cloud_plane->points[i].z > side_height) {
@@ -218,6 +222,9 @@ int get_side_protrusion(PointPtr cloud_plane, float side_height, std::vector<Poi
 	// filter_side_protrusion.setRadiusSearch(0.05);
 	// filter_side_protrusion.setMinNeighborsInRadius(10);
 	// filter_side_protrusion.filter(*trunk_side_protrusion_filter);
+
+	if (trunk_side_protrusion_potential->size() < 50)
+		return -1;
 
 	pcl::search::KdTree<PointT>::Ptr tree_side_protrusion(new pcl::search::KdTree<PointT>);
 	std::vector<pcl::PointIndices> cluster_side_protrusion;
@@ -323,12 +330,12 @@ int main(int argc, char *argv[]) {
 	pcl::visualization::PCLVisualizer viewers("Cloud Viewer");
 	viewers.addCoordinateSystem();
 	viewers.setBackgroundColor(0.0, 0.0, 0.0);
-	int para = 0;
-	int para1 = 0;
+	float para = 0;
+	float para1 = 0;
 	if (argc >= 3)
-		para = atoi(argv[2]);
+		para = atof(argv[2]);
 	if (argc >= 4)
-		para1 = atoi(argv[3]);
+		para1 = atof(argv[3]);
 
 
 	// [1] load pcd data
@@ -447,7 +454,7 @@ int main(int argc, char *argv[]) {
 	plane_trunk_horizontal.setOptimizeCoefficients(true);
 	plane_trunk_horizontal.setModelType(pcl::SACMODEL_PLANE);
 	plane_trunk_horizontal.setMethodType(pcl::SAC_RANSAC);
-	plane_trunk_horizontal.setDistanceThreshold(0.01);
+	plane_trunk_horizontal.setDistanceThreshold(0.02);
 	plane_trunk_horizontal.setInputCloud(cloud_horizontal);
 	extract_trunk_horizontal.setInputCloud(cloud_horizontal);
 
@@ -479,6 +486,7 @@ int main(int argc, char *argv[]) {
 	int horizontal_min_idx = -1;
 	float horizontal_min_height = 10.0;
 	for (int i = 0; i < vec_cloud_horizontal.size(); ++i) {
+		std::cout << "heifhaISDU   " << abs(vec_plane_coeff_trunk_horizontal[i]->values[3]) << std::endl;
 		if ( abs(vec_plane_coeff_trunk_horizontal[i]->values[3]) < horizontal_min_height ) {
 			horizontal_min_height = abs(vec_plane_coeff_trunk_horizontal[i]->values[3]);
 			horizontal_min_idx = i;
@@ -487,15 +495,15 @@ int main(int argc, char *argv[]) {
 	PointPtr cloud_trunk_subface( vec_cloud_horizontal[horizontal_min_idx] );
 	pcl::ModelCoefficients::Ptr plane_coeff_subface( vec_plane_coeff_trunk_horizontal[horizontal_min_idx] );
 
-	// VisualizationHandle cloud_horizontal0_colorh(vec_cloud_horizontal[0], 255, 0, 0);
+	// VisualizationHandle cloud_horizontal0_colorh(vec_cloud_horizontal[0], 255, 0, 255);
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal[0], cloud_horizontal0_colorh, "horizontal0 cloud");
 	// VisualizationHandle cloud_horizontal1_colorh(vec_cloud_horizontal[1], 0, 255, 0);
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal[1], cloud_horizontal1_colorh, "horizontal1 cloud");
 	// VisualizationHandle cloud_horizontal2_colorh(vec_cloud_horizontal[2], 0, 0, 255);
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal[2], cloud_horizontal2_colorh, "horizontal2 cloud");
-	// VisualizationHandle cloud_horizontal3_colorh(vec_cloud_horizontal[3], 255, 255, 0);
-	// viewers.addPointCloud<PointT>(vec_cloud_horizontal[3], cloud_horizontal3_colorh, "horizontal3 cloud");
-	
+	// VisualizationHandle cloud_subface_colorh(cloud_trunk_subface, 255, 0, 0);
+	// viewers.addPointCloud<PointT>(cloud_trunk_subface, cloud_subface_colorh, "cloud subface");
+
 
 	// [9] calculate the centre line and get the angle
 	float subface_x_front;
@@ -550,7 +558,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
   
-	float centre_line_k = (num * sum_subface_xy - sum_subface_x * sum_subface_y) / (num * sum_subface_xx - sum_subface_x * sum_subface_x);
+	float centre_line_k = (num * sum_subface_xy - sum_subface_x * sum_subface_y) / 
+						  (num * sum_subface_xx - sum_subface_x * sum_subface_x);
 	float centre_line_b = sum_subface_y - centre_line_b * sum_subface_x;
 	std::cout << "centre line is y = " << centre_line_k << " + " << centre_line_b << std::endl; 
 
@@ -604,12 +613,12 @@ int main(int argc, char *argv[]) {
 
 		filter_outrem.setInputCloud( cloud_temp_rev );
 		filter_outrem.setRadiusSearch(0.05);
-		filter_outrem.setMinNeighborsInRadius(20);
+		filter_outrem.setMinNeighborsInRadius(10);
 		filter_outrem.filter( *cloud_temp_filtered );
 		vec_cloud_horizontal_filtered_rev.push_back( cloud_temp_filtered );
 	}
 
-	PointPtr cloud_subface_rev( vec_cloud_horizontal_rev[horizontal_min_idx] );
+	PointPtr cloud_subface_rev( vec_cloud_horizontal_filtered_rev[horizontal_min_idx] );
 
 	// VisualizationHandle cloud_downsampled_colorh(cloud_downsampled_rev, 255, 255, 255);
 	// viewers.addPointCloud<PointT>(cloud_downsampled_rev, cloud_downsampled_colorh, "downsampled cloud");
@@ -621,7 +630,7 @@ int main(int argc, char *argv[]) {
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal_filtered_rev[2], cloud_horizontal2_colorh, "horizontal2 cloud");
 	// VisualizationHandle cloud_horizontal3_colorh(vec_cloud_horizontal_filtered_rev[3], 255, 255, 0);
 	// viewers.addPointCloud<PointT>(vec_cloud_horizontal_filtered_rev[3], cloud_horizontal3_colorh, "horizontal3 cloud");
-	
+
 
 	// [11] calculate normal after revise
 	std::cout << "calculate normal after revise..." << std::endl;
@@ -779,11 +788,14 @@ int main(int argc, char *argv[]) {
 	float trunk_stair_x_back = 0.0;
 	for (size_t i = 0; i < vec_cloud_horizontal.size(); ++i) {
 		float plane_height = abs(vec_plane_coeff_trunk_horizontal[i]->values[3]);
-		if ( plane_height > horizontal_min_height + 0.1 && plane_height < trunk_head_height - 0.1 ) {
+		if ( plane_height > horizontal_min_height + 0.01 && plane_height < trunk_head_height - 0.1 ) {
+			float max_plane_x = -100.0;
 			float min_plane_x = 100.0;
 			float max_plane_y = -100.0;
 			float min_plane_y = 100.0;
 			for (size_t j = 0; j < vec_cloud_horizontal_filtered_rev[i]->size(); ++j) {
+				if (vec_cloud_horizontal_filtered_rev[i]->points[j].x > max_plane_x)
+					max_plane_x = vec_cloud_horizontal_filtered_rev[i]->points[j].x;
 				if (vec_cloud_horizontal_filtered_rev[i]->points[j].x < min_plane_x)
 					min_plane_x = vec_cloud_horizontal_filtered_rev[i]->points[j].x;
 				if (vec_cloud_horizontal_filtered_rev[i]->points[j].y > max_plane_y)
@@ -797,18 +809,24 @@ int main(int argc, char *argv[]) {
 			// std::cout << "At " << i << ", subface_pos_ymin: " << subface_pos_ymin << std::endl;
 			// std::cout << "At " << i << ", max_plane_y: " << max_plane_y << std::endl;
 			// std::cout << "At " << i << ", subface_pos_ymax: " << subface_pos_ymax << std::endl;
-			if ( abs(min_plane_x - subface_pos_xmax) < 0.1 && abs(max_plane_y - subface_pos_ymax) < 0.1
-			&&  abs(min_plane_y - subface_pos_ymin) < 0.1 ) {
+			if ( abs(min_plane_x - subface_pos_xmax) < 0.2 && abs(max_plane_y - subface_pos_ymax) < 0.2
+			&&  abs(min_plane_y - subface_pos_ymin) < 0.2 ) {
 				cloud_trunk_stair = vec_cloud_horizontal_filtered_rev[i];
-				trunk_stair_length = get_length(cloud_trunk_stair, trunk_stair_x_front, trunk_stair_x_back, 0.8);
-				trunk_stair_height = plane_height - subface_tail_height;
+				for (size_t k = 0; k < cloud_trunk_stair->size(); ++k) {
+					trunk_stair_height += cloud_trunk_stair->points[k].z;
+				}
+				trunk_stair_height /= cloud_trunk_stair->size();
+
+				// trunk_stair_length = get_length(cloud_trunk_stair, trunk_stair_x_front, trunk_stair_x_back, 0.8);
+				trunk_stair_length = max_plane_y - min_plane_y;
+				trunk_stair_x_front = max_plane_x;
+				trunk_stair_x_back = min_plane_x;
 				trunk_stair = true;
 				break;
 			}
 		}
 	}
 	if (trunk_stair) {
-		subface_pos_xmax = trunk_stair_x_front;
 		std::cout << "Trunk stair exist" << std::endl;
 		std::cout << "stair height: " << trunk_stair_height << std::endl;
 		std::cout << "stair length: " << trunk_stair_length << std::endl;
@@ -823,24 +841,48 @@ int main(int argc, char *argv[]) {
 	PointPtr trunk_plane_left(new pcl::PointCloud<PointT>());
 	PointPtr trunk_plane_back(new pcl::PointCloud<PointT>());
 	PointPtr trunk_plane_front(new pcl::PointCloud<PointT>());
-	float subface_y_centre = (subface_pos_ymax + subface_pos_ymin) / 2.0;
-	for (size_t i = 0; i < cloud_normals_rev->size(); ++i) {
-		if (cloud_downsampled_rev->points[i].x < subface_pos_xmax - 0.1 && cloud_downsampled_rev->points[i].x > subface_pos_xmin + 0.1
-		&& cloud_downsampled_rev->points[i].z > subface_tail_height + trunk_stair_height + 0.2) {
-			if (cloud_downsampled_rev->points[i].y < subface_y_centre) 
-				trunk_plane_right->push_back(cloud_downsampled_rev->points[i]);
-			if (cloud_downsampled_rev->points[i].y > subface_y_centre) 
-				trunk_plane_left->push_back(cloud_downsampled_rev->points[i]);
+	if (trunk_stair) {
+		for (size_t i = 0; i < cloud_normals_rev->size(); ++i) {
+			if (cloud_downsampled_rev->points[i].x < trunk_stair_x_front && cloud_downsampled_rev->points[i].x > subface_pos_xmin
+			&& cloud_downsampled_rev->points[i].z > trunk_stair_height + 0.2) {
+				if (cloud_downsampled_rev->points[i].y < subface_pos_ymin + 0.01) 
+					trunk_plane_right->push_back(cloud_downsampled_rev->points[i]);
+				if (cloud_downsampled_rev->points[i].y > subface_pos_ymax - 0.01) 
+					trunk_plane_left->push_back(cloud_downsampled_rev->points[i]);
+			}
+			else if (cloud_downsampled_rev->points[i].x <= subface_pos_xmin + 0.1 
+			&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin 
+			&& cloud_downsampled_rev->points[i].z > trunk_stair_height + 0.2) {
+				trunk_plane_back->push_back(cloud_downsampled_rev->points[i]);
+			}
+			else if (cloud_downsampled_rev->points[i].x >= trunk_stair_x_front - 0.1 
+			&& cloud_downsampled_rev->points[i].x < trunk_stair_x_front + 0.2
+			&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin
+			&& cloud_downsampled_rev->points[i].z > trunk_stair_height + 0.2) {
+				trunk_plane_front->push_back(cloud_downsampled_rev->points[i]);
+			}
 		}
-		else if (cloud_downsampled_rev->points[i].x <= subface_pos_xmin + 0.1 
-		&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin 
-		&& cloud_downsampled_rev->points[i].z > subface_tail_height + trunk_stair_height + 0.2) {
-			trunk_plane_back->push_back(cloud_downsampled_rev->points[i]);
-		}
-		else if (cloud_downsampled_rev->points[i].x >= subface_pos_xmax - 0.1 && cloud_downsampled_rev->points[i].x < subface_pos_xmax + 0.5
-		&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin
-		&& cloud_downsampled_rev->points[i].z > subface_tail_height + trunk_stair_height + 0.2) {
-			trunk_plane_front->push_back(cloud_downsampled_rev->points[i]);
+	}
+	else {
+		for (size_t i = 0; i < cloud_normals_rev->size(); ++i) {
+			if (cloud_downsampled_rev->points[i].x < subface_pos_xmax - 0.1 && cloud_downsampled_rev->points[i].x > subface_pos_xmin
+			&& cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+				if (cloud_downsampled_rev->points[i].y < subface_pos_ymin + 0.01) 
+					trunk_plane_right->push_back(cloud_downsampled_rev->points[i]);
+				if (cloud_downsampled_rev->points[i].y > subface_pos_ymax - 0.01) 
+					trunk_plane_left->push_back(cloud_downsampled_rev->points[i]);
+			}
+			else if (cloud_downsampled_rev->points[i].x <= subface_pos_xmin + 0.1 
+			&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin 
+			&& cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+				trunk_plane_back->push_back(cloud_downsampled_rev->points[i]);
+			}
+			else if (cloud_downsampled_rev->points[i].x >= subface_pos_xmax - 0.1 
+			&& cloud_downsampled_rev->points[i].x < subface_pos_xmax + 0.2
+			&& cloud_downsampled_rev->points[i].y < subface_pos_ymax && cloud_downsampled_rev->points[i].y > subface_pos_ymin
+			&& cloud_downsampled_rev->points[i].z > subface_tail_height + 0.2) {
+				trunk_plane_front->push_back(cloud_downsampled_rev->points[i]);
+			}
 		}
 	}
 
@@ -1083,16 +1125,22 @@ int main(int argc, char *argv[]) {
 	std::vector<float> vec_trunk_left_protrusion_xmin;
 	std::vector<float> vec_trunk_left_protrusion_ymax;
 	std::vector<float> vec_trunk_left_protrusion_ymin;
-	get_side_protrusion(trunk_plane_left, left_height, vec_cloud_left_protrusion, vec_trunk_left_protrusion_height, 
-						vec_trunk_left_protrusion_xmax, vec_trunk_left_protrusion_xmin,
-						vec_trunk_left_protrusion_ymax, vec_trunk_left_protrusion_ymin);
-	for (int i = 0; i < vec_cloud_left_protrusion.size(); ++i) {
-		std::cout << "point size of cluster " << i << " at left protrusion is: " << vec_cloud_left_protrusion[i]->size() << std::endl;
-		std::cout << "trunk left protrusion of cluster " << i << " height: " << vec_trunk_left_protrusion_height[i] << std::endl;
-		std::cout << "trunk left protrusion of cluster " << i << " xmax: " << vec_trunk_left_protrusion_xmax[i] << std::endl;
-		std::cout << "trunk left protrusion of cluster " << i << " xmin: " << vec_trunk_left_protrusion_xmin[i] << std::endl;
-		std::cout << "trunk left protrusion of cluster " << i << " ymax: " << vec_trunk_left_protrusion_ymax[i] << std::endl;
-		std::cout << "trunk left protrusion of cluster " << i << " ymin: " << vec_trunk_left_protrusion_ymin[i] << std::endl;
+	int left_protrusion = get_side_protrusion(trunk_plane_left, left_height, 
+											  vec_cloud_left_protrusion, vec_trunk_left_protrusion_height, 
+											  vec_trunk_left_protrusion_xmax, vec_trunk_left_protrusion_xmin,
+											  vec_trunk_left_protrusion_ymax, vec_trunk_left_protrusion_ymin);
+	if (left_protrusion < 0) {
+		std::cout << "No left protrusion" << std::endl;
+	}
+	else {
+		for (int i = 0; i < vec_cloud_left_protrusion.size(); ++i) {
+			std::cout << "point size of cluster " << i << " at left protrusion is: " << vec_cloud_left_protrusion[i]->size() << std::endl;
+			std::cout << "trunk left protrusion of cluster " << i << " height: " << vec_trunk_left_protrusion_height[i] << std::endl;
+			std::cout << "trunk left protrusion of cluster " << i << " xmax: " << vec_trunk_left_protrusion_xmax[i] << std::endl;
+			std::cout << "trunk left protrusion of cluster " << i << " xmin: " << vec_trunk_left_protrusion_xmin[i] << std::endl;
+			std::cout << "trunk left protrusion of cluster " << i << " ymax: " << vec_trunk_left_protrusion_ymax[i] << std::endl;
+			std::cout << "trunk left protrusion of cluster " << i << " ymin: " << vec_trunk_left_protrusion_ymin[i] << std::endl;
+		}
 	}
 
 	std::vector<PointPtr> vec_cloud_right_protrusion;
@@ -1101,16 +1149,22 @@ int main(int argc, char *argv[]) {
 	std::vector<float> vec_trunk_right_protrusion_xmin;
 	std::vector<float> vec_trunk_right_protrusion_ymax;
 	std::vector<float> vec_trunk_right_protrusion_ymin;
-	get_side_protrusion(trunk_plane_right, right_height, vec_cloud_right_protrusion, vec_trunk_right_protrusion_height, 
-						vec_trunk_right_protrusion_xmax, vec_trunk_right_protrusion_xmin,
-						vec_trunk_right_protrusion_ymax, vec_trunk_right_protrusion_ymin);
-	for (int i = 0; i < vec_cloud_right_protrusion.size(); ++i) {
-		std::cout << "point size of cluster " << i << " at right protrusion is: " << vec_cloud_right_protrusion[i]->size() << std::endl;
-		std::cout << "trunk right protrusion of cluster " << i << " height: " << vec_trunk_right_protrusion_height[i] << std::endl;
-		std::cout << "trunk right protrusion of cluster " << i << " xmax: " << vec_trunk_right_protrusion_xmax[i] << std::endl;
-		std::cout << "trunk right protrusion of cluster " << i << " xmin: " << vec_trunk_right_protrusion_xmin[i] << std::endl;
-		std::cout << "trunk right protrusion of cluster " << i << " ymax: " << vec_trunk_right_protrusion_ymax[i] << std::endl;
-		std::cout << "trunk right protrusion of cluster " << i << " ymin: " << vec_trunk_right_protrusion_ymin[i] << std::endl;
+	int right_protrusion = get_side_protrusion(trunk_plane_right, right_height, 
+											   vec_cloud_right_protrusion, vec_trunk_right_protrusion_height, 
+											   vec_trunk_right_protrusion_xmax, vec_trunk_right_protrusion_xmin,
+											   vec_trunk_right_protrusion_ymax, vec_trunk_right_protrusion_ymin);
+	if (right_protrusion < 0) {
+		std::cout << "No right protrusion" << std::endl;
+	}
+	else {
+		for (int i = 0; i < vec_cloud_right_protrusion.size(); ++i) {
+			std::cout << "point size of cluster " << i << " at right protrusion is: " << vec_cloud_right_protrusion[i]->size() << std::endl;
+			std::cout << "trunk right protrusion of cluster " << i << " height: " << vec_trunk_right_protrusion_height[i] << std::endl;
+			std::cout << "trunk right protrusion of cluster " << i << " xmax: " << vec_trunk_right_protrusion_xmax[i] << std::endl;
+			std::cout << "trunk right protrusion of cluster " << i << " xmin: " << vec_trunk_right_protrusion_xmin[i] << std::endl;
+			std::cout << "trunk right protrusion of cluster " << i << " ymax: " << vec_trunk_right_protrusion_ymax[i] << std::endl;
+			std::cout << "trunk right protrusion of cluster " << i << " ymin: " << vec_trunk_right_protrusion_ymin[i] << std::endl;
+		}
 	}
 
 	std::vector<PointPtr> vec_cloud_back_protrusion;
@@ -1119,16 +1173,22 @@ int main(int argc, char *argv[]) {
 	std::vector<float> vec_trunk_back_protrusion_xmin;
 	std::vector<float> vec_trunk_back_protrusion_ymax;
 	std::vector<float> vec_trunk_back_protrusion_ymin;
-	get_side_protrusion(trunk_plane_back, back_height, vec_cloud_back_protrusion, vec_trunk_back_protrusion_height, 
-						vec_trunk_back_protrusion_xmax, vec_trunk_back_protrusion_xmin,
-						vec_trunk_back_protrusion_ymax, vec_trunk_back_protrusion_ymin);
-	for (int i = 0; i < vec_cloud_back_protrusion.size(); ++i) {
-		std::cout << "point size of cluster " << i << " at back protrusion is: " << vec_cloud_back_protrusion[i]->size() << std::endl;
-		std::cout << "trunk back protrusion of cluster " << i << " height: " << vec_trunk_back_protrusion_height[i] << std::endl;
-		std::cout << "trunk back protrusion of cluster " << i << " xmax: " << vec_trunk_back_protrusion_xmax[i] << std::endl;
-		std::cout << "trunk back protrusion of cluster " << i << " xmin: " << vec_trunk_back_protrusion_xmin[i] << std::endl;
-		std::cout << "trunk back protrusion of cluster " << i << " ymax: " << vec_trunk_back_protrusion_ymax[i] << std::endl;
-		std::cout << "trunk back protrusion of cluster " << i << " ymin: " << vec_trunk_back_protrusion_ymin[i] << std::endl;
+	int back_protrusion = get_side_protrusion(trunk_plane_back, back_height, 
+											  vec_cloud_back_protrusion, vec_trunk_back_protrusion_height, 
+											  vec_trunk_back_protrusion_xmax, vec_trunk_back_protrusion_xmin,
+											  vec_trunk_back_protrusion_ymax, vec_trunk_back_protrusion_ymin);
+	if (back_protrusion < 0) {
+		std::cout << "No back protrusion" << std::endl;
+	}
+	else {
+		for (int i = 0; i < vec_cloud_back_protrusion.size(); ++i) {
+			std::cout << "point size of cluster " << i << " at back protrusion is: " << vec_cloud_back_protrusion[i]->size() << std::endl;
+			std::cout << "trunk back protrusion of cluster " << i << " height: " << vec_trunk_back_protrusion_height[i] << std::endl;
+			std::cout << "trunk back protrusion of cluster " << i << " xmax: " << vec_trunk_back_protrusion_xmax[i] << std::endl;
+			std::cout << "trunk back protrusion of cluster " << i << " xmin: " << vec_trunk_back_protrusion_xmin[i] << std::endl;
+			std::cout << "trunk back protrusion of cluster " << i << " ymax: " << vec_trunk_back_protrusion_ymax[i] << std::endl;
+			std::cout << "trunk back protrusion of cluster " << i << " ymin: " << vec_trunk_back_protrusion_ymin[i] << std::endl;
+		}
 	}
 
 	// VisualizationHandle trunk_plane_left_colorh(trunk_plane_left, 255, 0, 0);
@@ -1157,100 +1217,151 @@ int main(int argc, char *argv[]) {
 
 	// [22] get trunk inside protrusion
 	PointPtr trunk_inside_protrusion_potential(new pcl::PointCloud<PointT>());
-	for (size_t i = 0; i < cloud_downsampled_rev->size(); ++i) {
-		if (cloud_downsampled_rev->points[i].x < trunk_front - 0.05 && cloud_downsampled_rev->points[i].x > trunk_back + 0.05 
+	if (trunk_stair) {
+		for (size_t i = 0; i < cloud_downsampled_rev->size(); ++i) {
+			if (cloud_downsampled_rev->points[i].x < subface_pos_xmax - 0.01 && cloud_downsampled_rev->points[i].x > trunk_back + 0.01 
 			&& cloud_downsampled_rev->points[i].z > subface_tail_height + 0.1) {
-			int temp = static_cast<int>((trunk_front - cloud_downsampled_rev->points[i].x) / WIDTH_RESOLUTION);
-			if (cloud_downsampled_rev->points[i].y < vec_trunk_ymax[temp] - 0.05
+				int temp = static_cast<int>((trunk_front - cloud_downsampled_rev->points[i].x) / WIDTH_RESOLUTION);
+				if (cloud_downsampled_rev->points[i].y < vec_trunk_ymax[temp] - 0.05
+					&& cloud_downsampled_rev->points[i].y > vec_trunk_ymin[temp] + 0.05) {
+					trunk_inside_protrusion_potential->push_back(cloud_downsampled_rev->points[i]);
+				}
+			}
+			else if (cloud_downsampled_rev->points[i].x < trunk_front - 0.01 && cloud_downsampled_rev->points[i].x > subface_pos_xmax + 0.01 
+			&& cloud_downsampled_rev->points[i].z > trunk_stair_height + 0.1) {
+				int temp = static_cast<int>((trunk_front - cloud_downsampled_rev->points[i].x) / WIDTH_RESOLUTION);
+				if (cloud_downsampled_rev->points[i].y < vec_trunk_ymax[temp] - 0.05
 				&& cloud_downsampled_rev->points[i].y > vec_trunk_ymin[temp] + 0.05) {
-				trunk_inside_protrusion_potential->push_back(cloud_downsampled_rev->points[i]);
+					trunk_inside_protrusion_potential->push_back(cloud_downsampled_rev->points[i]);
+				}
 			}
 		}
 	}
-	
-	pcl::search::KdTree<PointT>::Ptr tree_inside_protrusion(new pcl::search::KdTree<PointT>);
-	std::vector<pcl::PointIndices> cluster_inside_protrusion;
-	pcl::EuclideanClusterExtraction<PointT> ecx_inside_protrusion;
-	tree_inside_protrusion->setInputCloud(trunk_inside_protrusion_potential);
-	ecx_inside_protrusion.setClusterTolerance(0.1);
-	ecx_inside_protrusion.setMinClusterSize(50);
-	ecx_inside_protrusion.setMaxClusterSize(1000);
-	ecx_inside_protrusion.setSearchMethod(tree_inside_protrusion);
-	ecx_inside_protrusion.setInputCloud(trunk_inside_protrusion_potential);
-	ecx_inside_protrusion.extract(cluster_inside_protrusion);
-
-	std::vector<PointPtr> vec_cloud_inside_protrusion;
-	for (int i = 0; i < cluster_inside_protrusion.size(); ++i) {
-		float trunk_inside_protrusion_height = 0.0;
-		float trunk_inside_protrusion_xmax = -100.0;
-		float trunk_inside_protrusion_xmin = 100.0;
-		float trunk_inside_protrusion_ymax = -100.0;
-		float trunk_inside_protrusion_ymin = 100.0;
-		PointPtr cloud_cluster(new pcl::PointCloud<PointT>);
-		pcl::PointIndices cluster_index = cluster_inside_protrusion[i];
-		for (std::vector<int>::const_iterator it = cluster_index.indices.begin(); it != cluster_index.indices.end(); ++it)
-			cloud_cluster->push_back(trunk_inside_protrusion_potential->points[*it]);
-
-		for (size_t i = 0; i < cloud_cluster->size(); ++i) {
-			if (cloud_cluster->points[i].z > trunk_inside_protrusion_height)
-				trunk_inside_protrusion_height = cloud_cluster->points[i].z;
-			if (cloud_cluster->points[i].x > trunk_inside_protrusion_xmax)
-				trunk_inside_protrusion_xmax = cloud_cluster->points[i].x;
-			if (cloud_cluster->points[i].x < trunk_inside_protrusion_xmin)
-				trunk_inside_protrusion_xmin = cloud_cluster->points[i].x;
-			if (cloud_cluster->points[i].y > trunk_inside_protrusion_ymax)
-				trunk_inside_protrusion_ymax = cloud_cluster->points[i].y;
-			if (cloud_cluster->points[i].y < trunk_inside_protrusion_ymin)
-				trunk_inside_protrusion_ymin = cloud_cluster->points[i].y;
+	else {
+		for (size_t i = 0; i < cloud_downsampled_rev->size(); ++i) {
+			if (cloud_downsampled_rev->points[i].x < trunk_front - 0.05 && cloud_downsampled_rev->points[i].x > trunk_back + 0.05 
+			&& cloud_downsampled_rev->points[i].z > subface_tail_height + 0.1) {
+				int temp = static_cast<int>((trunk_front - cloud_downsampled_rev->points[i].x) / WIDTH_RESOLUTION);
+				if (cloud_downsampled_rev->points[i].y < vec_trunk_ymax[temp] - 0.05
+				&& cloud_downsampled_rev->points[i].y > vec_trunk_ymin[temp] + 0.05) {
+					trunk_inside_protrusion_potential->push_back(cloud_downsampled_rev->points[i]);
+				}
+			}
 		}
+	}
 
-		if (trunk_inside_protrusion_ymax - trunk_inside_protrusion_ymin < 0.03)
-			continue;
-		if (trunk_inside_protrusion_xmax - trunk_inside_protrusion_xmin < 0.03)
-			continue;
+	PointPtr cloud_filter_inside_protrusion( trunk_inside_protrusion_potential );
+	// pcl::RadiusOutlierRemoval<PointT> filter_inside_protrusion;
+	// PointPtr cloud_filter_inside_protrusion(new pcl::PointCloud<PointT>);
+	// filter_inside_protrusion.setInputCloud( trunk_inside_protrusion_potential );
+	// filter_inside_protrusion.setRadiusSearch(0.05);
+	// filter_inside_protrusion.setMinNeighborsInRadius(10);
+	// filter_inside_protrusion.filter( *cloud_filter_inside_protrusion );
 
-		vec_cloud_inside_protrusion.push_back(cloud_cluster);
 
-		std::cout << "point size of cluster " << i << " at inside protrusion is: " << cloud_cluster->size() << std::endl;
-		std::cout << "trunk inside protrusion of cluster " << i << " height: " << trunk_inside_protrusion_height << std::endl;
-		std::cout << "trunk inside protrusion of cluster " << i << " xmax: " << trunk_inside_protrusion_xmax << std::endl;
-		std::cout << "trunk inside protrusion of cluster " << i << " xmin: " << trunk_inside_protrusion_xmin << std::endl;
-		std::cout << "trunk inside protrusion of cluster " << i << " ymax: " << trunk_inside_protrusion_ymax << std::endl;
-		std::cout << "trunk inside protrusion of cluster " << i << " ymin: " << trunk_inside_protrusion_ymin << std::endl;
+	if (cloud_filter_inside_protrusion->size() < 50) {
+		std::cout << "No inside protrusion" << std::endl;
+	}
+	else {
+		pcl::search::KdTree<PointT>::Ptr tree_inside_protrusion(new pcl::search::KdTree<PointT>);
+		std::vector<pcl::PointIndices> cluster_inside_protrusion;
+		pcl::EuclideanClusterExtraction<PointT> ecx_inside_protrusion;
+		tree_inside_protrusion->setInputCloud(cloud_filter_inside_protrusion);
+		ecx_inside_protrusion.setClusterTolerance(0.1);
+		ecx_inside_protrusion.setMinClusterSize(50);
+		ecx_inside_protrusion.setMaxClusterSize(3000);
+		ecx_inside_protrusion.setSearchMethod(tree_inside_protrusion);
+		ecx_inside_protrusion.setInputCloud(cloud_filter_inside_protrusion);
+		ecx_inside_protrusion.extract(cluster_inside_protrusion);
+
+		std::cout << "size cluster_inside_protrusion " << cluster_inside_protrusion.size() << std::endl;
+
+		std::vector<PointPtr> vec_cloud_inside_protrusion;
+		for (int i = 0; i < cluster_inside_protrusion.size(); ++i) {
+			float trunk_inside_protrusion_height = 0.0;
+			float trunk_inside_protrusion_xmax = -100.0;
+			float trunk_inside_protrusion_xmin = 100.0;
+			float trunk_inside_protrusion_ymax = -100.0;
+			float trunk_inside_protrusion_ymin = 100.0;
+			PointPtr cloud_cluster(new pcl::PointCloud<PointT>);
+			pcl::PointIndices cluster_index = cluster_inside_protrusion[i];
+			for (std::vector<int>::const_iterator it = cluster_index.indices.begin(); it != cluster_index.indices.end(); ++it)
+				cloud_cluster->push_back(cloud_filter_inside_protrusion->points[*it]);
+
+			for (size_t i = 0; i < cloud_cluster->size(); ++i) {
+				if (cloud_cluster->points[i].z > trunk_inside_protrusion_height)
+					trunk_inside_protrusion_height = cloud_cluster->points[i].z;
+				if (cloud_cluster->points[i].x > trunk_inside_protrusion_xmax)
+					trunk_inside_protrusion_xmax = cloud_cluster->points[i].x;
+				if (cloud_cluster->points[i].x < trunk_inside_protrusion_xmin)
+					trunk_inside_protrusion_xmin = cloud_cluster->points[i].x;
+				if (cloud_cluster->points[i].y > trunk_inside_protrusion_ymax)
+					trunk_inside_protrusion_ymax = cloud_cluster->points[i].y;
+				if (cloud_cluster->points[i].y < trunk_inside_protrusion_ymin)
+					trunk_inside_protrusion_ymin = cloud_cluster->points[i].y;
+			}
+
+			// if (trunk_inside_protrusion_ymax - trunk_inside_protrusion_ymin < 0.03)
+			// 	continue;
+			// if (trunk_inside_protrusion_xmax - trunk_inside_protrusion_xmin < 0.03)
+			// 	continue;
+
+			vec_cloud_inside_protrusion.push_back(cloud_cluster);
+
+			std::cout << "point size of cluster " << i << " at inside protrusion is: " << cloud_cluster->size() << std::endl;
+			std::cout << "trunk inside protrusion of cluster " << i << " height: " << trunk_inside_protrusion_height << std::endl;
+			std::cout << "trunk inside protrusion of cluster " << i << " xmax: " << trunk_inside_protrusion_xmax << std::endl;
+			std::cout << "trunk inside protrusion of cluster " << i << " xmin: " << trunk_inside_protrusion_xmin << std::endl;
+			std::cout << "trunk inside protrusion of cluster " << i << " ymax: " << trunk_inside_protrusion_ymax << std::endl;
+			std::cout << "trunk inside protrusion of cluster " << i << " ymin: " << trunk_inside_protrusion_ymin << std::endl;
+		}
+		
+		// VisualizationHandle oricloud_colorh(cloud_downsampled_rev, 255, 255, 255);
+		// viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_colorh, "original cloud");
+		// VisualizationHandle inside_protrusion_protential_colorh(cloud_filter_inside_protrusion, 255, 0, 0);
+		// viewers.addPointCloud<PointT>(cloud_filter_inside_protrusion, 
+		// 							  inside_protrusion_protential_colorh, "inside protrusion protential cloud");
 	}
 	
-	VisualizationHandle oricloud_colorh(cloud_downsampled_rev, 255, 255, 255);
-	viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_colorh, "original cloud");
-	VisualizationHandle inside_protrusion_protential_colorh(trunk_inside_protrusion_potential, 255, 0, 0);
-	viewers.addPointCloud<PointT>(trunk_inside_protrusion_potential, inside_protrusion_protential_colorh, "inside protrusion protential cloud");
-
-
 	
 	// [99] visualization
-	// VisualizationHandle oricloud_colorh(cloud_downsampled_rev, 255, 255, 255);
-	// viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_colorh, "original cloud");
-	// VisualizationHandle plane_subface_colorh(cloud_subface_rev, 255, 0, 0);
-	// viewers.addPointCloud<PointT>(cloud_subface_rev, plane_subface_colorh, "subface cloud");
-	// VisualizationHandle trunk_plane_left_colorh(trunk_plane_left, 0, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_plane_left, trunk_plane_left_colorh, "cloud trunk plane left");
-	// VisualizationHandle trunk_plane_right_colorh(trunk_plane_right, 0, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_plane_right, trunk_plane_right_colorh, "cloud trunk plane right");
-	// VisualizationHandle trunk_plane_back_colorh(trunk_plane_back, 0, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_plane_back, trunk_plane_back_colorh, "cloud trunk plane back");
-	// VisualizationHandle trunk_plane_front_colorh(trunk_plane_front, 0, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_plane_front, trunk_plane_front_colorh, "cloud trunk plane front");
-	// VisualizationHandle trunk_line_left_colorh(trunk_line_left, 255, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_line_left, trunk_line_left_colorh, "cloud trunk line left");
-	// VisualizationHandle trunk_line_right_colorh(trunk_line_right, 255, 0, 255);
-	// viewers.addPointCloud<PointT>(trunk_line_right, trunk_line_right_colorh, "cloud trunk line right");
-	// VisualizationHandle trunk_line_back_colorh(trunk_line_back, 255, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_line_back, trunk_line_back_colorh, "cloud trunk line back");
-	// VisualizationHandle trunk_line_front_colorh(trunk_line_front, 255, 255, 0);
-	// viewers.addPointCloud<PointT>(trunk_line_front, trunk_line_front_colorh, "cloud trunk line front");
-	// VisualizationHandle cloud_head_potential_colorh(cloud_head_potential_rev, 255, 0, 0);
-	// viewers.addPointCloud<PointT>(cloud_head_potential_rev, cloud_head_potential_colorh, "cloud head potential");
-	// VisualizationHandle cloud_head_colorh(cloud_trunk_head_rev, 0, 255, 0);
-	// viewers.addPointCloud<PointT>(cloud_trunk_head_rev, cloud_head_colorh, "cloud head");
+	VisualizationHandle oricloud_colorh(cloud_downsampled_rev, 255, 255, 255);
+	viewers.addPointCloud<PointT>(cloud_downsampled_rev, oricloud_colorh, "original cloud");
+	VisualizationHandle plane_subface_colorh(cloud_subface_rev, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_subface_rev, plane_subface_colorh, "subface cloud");
+
+	VisualizationHandle cloud_head_plane_potential_colorh(cloud_head_plane_potential, 255, 0, 0);
+	viewers.addPointCloud<PointT>(cloud_head_plane_potential, cloud_head_plane_potential_colorh, "head plane potential cloud");
+	VisualizationHandle cloud_head_colorh(cloud_trunk_head, 0, 255, 0);
+	viewers.addPointCloud<PointT>(cloud_trunk_head, cloud_head_colorh, "head cloud");
+	VisualizationHandle cloud_head_potential_colorh(cloud_head_potential, 0, 0, 255);
+	viewers.addPointCloud<PointT>(cloud_head_potential, cloud_head_potential_colorh, "head potential cloud");
+
+	VisualizationHandle trunk_plane_left_colorh(trunk_plane_left, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_left, trunk_plane_left_colorh, "trunk plane left cloud");
+	VisualizationHandle trunk_plane_right_colorh(trunk_plane_right, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_right, trunk_plane_right_colorh, "trunk plane right cloud");
+	VisualizationHandle trunk_plane_back_colorh(trunk_plane_back, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_back, trunk_plane_back_colorh, "trunk plane back cloud");
+	VisualizationHandle trunk_plane_front_colorh(trunk_plane_front, 0, 255, 0);
+	viewers.addPointCloud<PointT>(trunk_plane_front, trunk_plane_front_colorh, "trunk plane front cloud");
+
+	VisualizationHandle trunk_line_left_colorh(trunk_line_height_left, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_height_left, trunk_line_left_colorh, "trunk line left height cloud");
+	VisualizationHandle trunk_line_right_colorh(trunk_line_height_right, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_height_right, trunk_line_right_colorh, "trunk line right height cloud");
+	VisualizationHandle trunk_line_back_colorh(trunk_line_height_back, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_height_back, trunk_line_back_colorh, "trunk line back height cloud");
+	VisualizationHandle trunk_line_front_colorh(trunk_line_height_front, 0, 0, 255);
+	viewers.addPointCloud<PointT>(trunk_line_height_front, trunk_line_front_colorh, "trunk line front height cloud");
+
+	VisualizationHandle trunk_line_front_back_colorh(cloud_front_line_back, 255, 0, 255);
+	viewers.addPointCloud<PointT>(cloud_front_line_back, trunk_line_front_back_colorh, "trunk line front cloud");
+	VisualizationHandle trunk_line_back_front_colorh(cloud_back_line_front, 255, 0, 255);
+	viewers.addPointCloud<PointT>(cloud_back_line_front, trunk_line_back_front_colorh, "trunk line back cloud");
+
+	VisualizationHandle inside_protrusion_protential_colorh(cloud_filter_inside_protrusion, 255, 255, 0);
+	viewers.addPointCloud<PointT>(cloud_filter_inside_protrusion, inside_protrusion_protential_colorh, "inside protrusion protential cloud");
 
 	viewers.spin();
 	return 0;
